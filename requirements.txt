@@ -1,6 +1,5 @@
 streamlit
 pandas
-json
 random
 matplotlib.pyplot
 numpy
