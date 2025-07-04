@@ -1,0 +1,14 @@
+streamlit
+pandas
+json
+random
+matplotlib.pyplot
+numpy
+os
+glob
+io
+base64
+html
+itertools
+time
+BytesIO
