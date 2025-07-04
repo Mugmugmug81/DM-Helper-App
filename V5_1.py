@@ -1,6 +1,5 @@
 import streamlit as st
 st.set_page_config(layout="wide", page_title="Dungeon Master!")  # Must be first Streamlit call
-st.write(f"Streamlit version being used: {st.__version__}") # Add this line
 import pandas as pd
 import json
 import random
