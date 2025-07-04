@@ -1,13 +1,4 @@
 streamlit
 pandas
-random
-matplotlib.pyplot
+matplotlib
 numpy
-os
-glob
-io
-base64
-html
-itertools
-time
-BytesIO
