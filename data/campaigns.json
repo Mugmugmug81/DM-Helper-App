@@ -1,0 +1,85 @@
+[
+    {
+        "Campaign Name": "Throne of Bhaal",
+        "Game System": "5E",
+        "DM Name": "Alex",
+        "Player Names": "Splat, Tarvin, Thava",
+        "Description": "A good one",
+        "Status": "Active",
+        "Lore": "Super cool",
+        "players": [
+            {
+                "Name": "Aaron",
+                "Character Name": "Tarvin",
+                "Race": null,
+                "Class": null,
+                "Notes": null
+            },
+            {
+                "Name": "Thava",
+                "Character Name": "Thava",
+                "Race": null,
+                "Class": null,
+                "Notes": null
+            },
+            {
+                "Name": "CJ",
+                "Character Name": "Splat",
+                "Race": null,
+                "Class": null,
+                "Notes": null
+            }
+        ],
+        "npcs": [
+            {
+                "Name": "Person",
+                "Role": null,
+                "Location": null,
+                "Status": null,
+                "Notes": null
+            }
+        ],
+        "monsters_in_campaign": [
+            {
+                "Name": "Adult Brass Dragon",
+                "Type": "Dragon",
+                "CR": "13",
+                "Notes": ""
+            },
+            {
+                "Name": "Alligator Turtle",
+                "Type": "Beast",
+                "CR": "1/4",
+                "Notes": ""
+            },
+            {
+                "Name": "Angel, Psychopomp",
+                "Type": "Celestial",
+                "CR": "4",
+                "Notes": ""
+            }
+        ],
+        "plot_lines": [
+            {
+                "Title": "Find the thing",
+                "Status": "Active",
+                "Synopsis": "Kill that thing for the stuff",
+                "Key NPCs": null,
+                "Locations": "Lower tents"
+            }
+        ]
+    },
+    {
+        "Campaign Name": "Campaign",
+        "Game System": "5e",
+        "DM Name": "Alex",
+        "Player Names": "Player, player 1",
+        "Description": "Blah",
+        "Status": "Completed",
+        "Lore": "Blah, blah",
+        "players": [],
+        "npcs": [],
+        "monsters_in_campaign": [],
+        "plot_lines": []
+    }
+]
