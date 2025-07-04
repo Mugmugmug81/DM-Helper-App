@@ -1079,12 +1079,12 @@ logo_col1, logo_col2 = st.columns([1, 1])
 
 with logo_col1:
     st.image("https://raw.githubusercontent.com/Mugmugmug81/keeping_up/main/1000210637.png", 
-             caption="2Ones", 
+             caption="2Ones (first splash screen)", 
              width=200) # Set a fixed width for the first logo
     
 with logo_col2:
     st.image("https://raw.githubusercontent.com/Mugmugmug81/keeping_up/main/1000210636.png", 
-             caption="Dungeon Master!", 
+             caption="Dungeon Master! (second splash screen)", 
              width=200) # Set a fixed width for the second logo
 
 st.markdown("<br>", unsafe_allow_html=True) # Add some space below logos
