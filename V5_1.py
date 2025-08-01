@@ -1,5 +1,14 @@
 import streamlit as st
-st.set_page_config(layout="wide", page_title="Dungeon Master!")  # Must be first Streamlit call
+import streamlit.components.v1 as components
+
+# --- Must be the first Streamlit call (This is the ONLY one that should be here) ---
+st.set_page_config(layout="wide", page_title="The Book of Boundless Beginnings")
+
+# --- Initialize session state for splash screen phase ---
+if 'splash_phase' not in st.session_state:
+    st.session_state.splash_phase = 0
+
+# --- Standard Python imports (keep these) ---
 import pandas as pd
 import json
 import random
@@ -14,7 +23,551 @@ import itertools
 import time
 from io import BytesIO
 
-# --- Configuration Constants ---
+# --- Query parameters for splash screen (keep this) ---
+query_params = st.query_params
+if 'splash_phase' in query_params:
+    try:
+        new_phase = int(query_params['splash_phase'])
+        if st.session_state.splash_phase != new_phase:
+            st.session_state.splash_phase = new_phase
+    except ValueError:
+        pass
+
+
+# --- Your image paths ---
+IMAGE_PATH_1 = "https://raw.githubusercontent.com/Mugmugmug81/keeping_up/main/1000210637.png"
+
+
+# --- CSS Style Block (Keep as is - now perfect!) ---
+st.markdown("""
+<style>
+    /* Import Google Fonts */
+    @import url('https://fonts.googleapis.com/css2?family=Cinzel+Decorative&family=IM+Fell+English+SC&display=swap');
+
+    body {
+        background-color: #1A123F; /* Deep Midnight Blue Background */
+        color: white;
+        font-family: 'IM Fell English SC', serif; /* Default body text font */
+    }
+    .stApp { background-color: #1A123F; }
+
+    /* Apply Cinzel Decorative to all standard HTML headings */
+    h1, h2, h3, h4, h5, h6 {
+        font-family: 'Cinzel Decorative', serif !important; /* Added !important */
+        color: #E0B0FF; /* Light purple for headings */
+    }
+
+    /* Apply Cinzel Decorative to specific Streamlit elements that act as titles or strong labels */
+    .stButton > button, /* Buttons */
+    .streamlit-expanderHeader, /* st.expander titles */
+    [data-testid="stSidebar"] .st-emotion-cache-16txt4k { /* Specifically target st.sidebar.header if present */
+        font-family: 'Cinzel Decorative', serif !important;
+    }
+
+    /* Broader font application for IM Fell English SC on common text elements */
+    .stApp p, /* Paragraphs */
+    .stApp li, /* List items */
+    .stApp .stMarkdown, /* Markdown output */
+    .stApp .stText, /* st.text output */
+    .stApp [data-testid="stWidgetLabel"], /* Labels for most input widgets (text_input, checkbox, radio, selectbox) */
+    .stApp .st-emotion-cache-10q7j36.e1nzilvr4, /* Common generic text element in Streamlit */
+    .stApp .st-emotion-cache-rncd9a.eczjsme5, /* Another common generic text element */
+    .stApp .st-emotion-cache-j5r0tf.eczjsme5 /* Another common generic text element */
+    {
+        font-family: 'IM Fell English SC', serif !important; /* Use !important to ensure override */
+    }
+
+    /* Ensure text inputs, select boxes, and text areas themselves also use the body font */
+    .stTextInput > div > div > input,
+    .stSelectbox > div > div > div > div > div,
+    .stTextArea > div > div > textarea {
+        font-family: 'IM Fell English SC', serif !important;
+    }
+
+    /* Sidebar Styling */
+    [data-testid="stSidebar"] {
+        background-color: #1A123F; /* Match main background color */
+        color: white; /* Ensure text in sidebar is readable */
+    }
+    [data-testid="stSidebarContent"] {
+        background-color: #1A123F; /* Ensure the content area also matches */
+        color: white;
+    }
+    /* Ensure any text content directly in sidebar also gets the body font */
+    [data-testid="stSidebarContent"] p,
+    [data-testid="stSidebarContent"] div,
+    [data-testid="stSidebarContent"] span,
+    [data-testid="stSidebarContent"] .stMarkdown {
+        font-family: 'IM Fell English SC', serif !important;
+    }
+
+
+    /* Splash screen specific styles */
+    .splash-image-container { display: flex; justify-content: center; align-items: center; width: 100%; max-height: 100vh; overflow: hidden; margin-bottom: 20px; }
+    .splash-image-container img { max-height: 100%; max-width: 100%; width: auto; height: auto; object-fit: contain; display: block; margin: auto; }
+    .splash-text-container { display: flex; justify-content: center; align-items: center; width: 100%; min-height: 30vh; max-height: 60vh; margin-bottom: 20px; flex-direction: column; text-align: center; opacity: 0; animation: fade-in 2s ease-out forwards; padding: 20px; }
+    .splash-text-container p {
+        font-size: 1.1em;
+        line-height: 1.5;
+        color: #DDD;
+        max-width: 80%;
+        margin-top: 15px;
+        font-family: 'IM Fell English SC', serif; /* Ensure p tags use the body font */
+    }
+    .stButton > button {
+        width: 100%;
+        background-color: #5A0080;
+        color: white;
+        padding: 15px 30px;
+        border: none;
+        border-radius: 10px;
+        font-size: 2em;
+        cursor: pointer;
+        transition: background-color 0.3s ease, transform 0.2s ease;
+        text-align: center;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        font-family: 'Cinzel Decorative', serif; /* Apply heading font to buttons for impact */
+    }
+    .stButton > button:hover {
+        background-color: #7C00B0;
+        transform: translateY(-2px);
+    }
+    @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+</style>
+""", unsafe_allow_html=True)
+
+
+# --- Splash Screen Logic ---
+if st.session_state.splash_phase < 2:
+    splash_placeholder = st.empty()
+
+    # --- Phase 0: Display First Image (Brand Logo) ---
+    if st.session_state.splash_phase == 0:
+        with splash_placeholder:
+            col1, col2, col3 = st.columns([1, 2, 1])
+            with col2:
+                st.markdown(f"""
+                <div class="splash-image-container">
+                    <img src="{IMAGE_PATH_1}" alt="Splash Image 1">
+                </div>
+                """, unsafe_allow_html=True)
+
+                st.markdown("---")
+
+                if st.button("Continue", key="phase0_continue_button"):
+                    st.session_state.splash_phase = 1
+                    st.rerun()
+
+        st.stop()
+
+    # --- Phase 1: Display "The Book of Boundless Beginnings" Text ---
+    elif st.session_state.splash_phase == 1:
+        with splash_placeholder:
+            col1, col2, col3 = st.columns([1, 2, 1])
+            with col2:
+                st.markdown(f"""
+                <div class="splash-text-container">
+                    <h2 style="font-size: 2em; margin-bottom: 15px; color: #E0B0FF;">The Book of Boundless Beginnings</h2>
+                    <p style="font-size: 1.1em; line-height: 1.5; color: #DDD;">
+                        A tome unlike any other, encased in interlocking plates of a shimmering, unknown metal that feels like solidified starlight, humming with an unseen current. Glyphs representing pure information, the fundamental zeroes and ones of creation, flicker and reconfigure across its surface in silence. The very pages themselves, as if spun from raw possibility, shimmer and shift at the edges, hinting at infinite, unwritten beginnings.
+                    </p>
+                </div>
+                """, unsafe_allow_html=True)
+
+                st.markdown("---")
+
+                if st.button("Open the Tome", key="phase1_unfold_button"):
+                    st.session_state.splash_phase = 2
+                    if 'splash_phase' in st.query_params:
+                        del st.query_params['splash_phase']
+                    st.rerun()
+
+        st.stop()
+
+
+# --- Main App Content (SIDEBAR NAVIGATION & PAGE CONTENT) ---
+if st.session_state.splash_phase == 2:
+    # Sidebar Navigation - THIS IS THE ONLY PLACE IT SHOULD BE DEFINED
+    st.sidebar.title("Create Thy Story")
+    selected_tab = st.sidebar.radio(
+        "", # No label, as the title above acts as one
+        options=["Quick Creator", "Bestiary", "Map Generator", "Map Library", "Campaign Manager", "Encounter Command Center"],
+        index=0, # Default to the first option
+        key="main_navigation_radio_unique" # Use the specific key you provided
+    )
+
+    # --- Data for Character Generation (now part of Main App Content) ---
+    FANTASY_RACES = [
+        "Human", "Elf (High)", "Elf (Wood)", "Elf (Dark)", "Dwarf (Hill)", "Dwarf (Mountain)",
+        "Halfling (Lightfoot)", "Halfling (Stout)", "Gnome (Forest)", "Gnome (Rock)",
+        "Half-Orc", "Half-Elf", "Dragonborn", "Tiefling", "Goliath", "Aasimar", "Genasi",
+        "Kenku", "Goblin", "Kobold", "Orc", "Tabaxi", "Lizardfolk", "Firbolg", "Githyanki", "Githzerai",
+        "Bugbear", "Centaur", "Changeling", "Deep Gnome", "Duergar", "Geniekin (Dao)", "Geniekin (Efreeti)",
+        "Geniekin (Marid)", "Geniekin (Gennasi)", "Grung", "Hagspawn", "Kalashtar", "Kender",
+        "Leonin", "Locathah", "Minotaur", "Plesiosaur Folk", "Owlin", "Satyr", "Shifter", "Simic Hybrid",
+        "Tortle", "Vedalken", "Warforged", "Yuan-ti Pureblood"
+    ]
+
+    FANTASY_CLASSES = [
+        "Barbarian", "Bard", "Cleric", "Druid", "Fighter", "Monk", "Paladin", "Ranger",
+        "Rogue", "Sorcerer", "Warlock", "Wizard", "Artificer", "Blood Hunter", "Mystic",
+        "Bard (College of Lore)", "Cleric (Life Domain)", "Druid (Circle of the Moon)",
+        "Fighter (Battle Master)", "Monk (Way of the Open Hand)", "Paladin (Oath of Devotion)",
+        "Ranger (Hunter)", "Rogue (Thief)", "Sorcerer (Draconic Bloodline)", "Warlock (The Fiend)",
+        "Wizard (School of Evocation)", "Artificer (Alchemist)", "Barbarian (Path of the Totem Warrior)"
+    ]
+
+    MALE_NAMES = [
+        "Aric", "Borin", "Caelen", "Darian", "Elian", "Finn", "Gareth", "Hakon", "Ivar", "Jaric",
+        "Kael", "Liam", "Milo", "Niles", "Orin", "Perrin", "Quinn", "Roric", "Stefan", "Taran",
+        "Alden", "Bjorn", "Corbin", "Damon", "Elias", "Fendrel", "Gideon", "Haldon", "Isen", "Joric",
+        "Thrain", "Kaelen", "Lysander", "Malachi", "Olin", "Ragnar", "Soren", "Torvin", "Varian", "Zane",
+        "Bram", "Cyrus", "Dax", "Einar", "Falk", "Gale", "Haldor", "Kaelan", "Larkin", "Marius"
+    ]
+
+    FEMALE_NAMES = [
+        "Aerith", "Briar", "Lyra", "Seraphina", "Isolde", "Rowan", "Elara", "Faelan", "Kaelen", "Linnea",
+        "Mirella", "Niamh", "Orla", "Phoebe", "Rhiannon", "Sylvie", "Thalia", "Valerie", "Willow", "Zara",
+        "Anya", "Bridget", "Cassia", "Delia", "Ember", "Freya", "Gwen", "Hazel", "Ivy", "Jessa",
+        "Astrid", "Bronwyn", "Calista", "Daphne", "Elara", "Fiona", "Genevieve", "Helena", "Iris", "Juniper",
+        "Kira", "Lena", "Maeve", "Nyssa", "Opal", "Petra", "Rhea", "Sage", "Terra", "Una"
+    ]
+
+    SURNAMES = [
+        "Stonehand", "Lightfoot", "Grimfang", "Whisperwind", "Darkwood", "Brightblade", "Ironhide",
+        "Shadowbrook", "Moonwhisper", "Strongarm", "Deepdelver", "Riverguard", "Oakenshield", "Stormborn",
+        "Ashworth", "Blackwood", "Coldwater", "Dragonheart", "Everhart", "Fallon", "Goldwing", "Highwind",
+        "Ironfist", "Longstride", "Nightshade", "Ravenwood", "Silverstream", "Stonewright", "Thornwood",
+        "Whisperfoot", "Firebeard", "Greymane", "Duskfall", "Emberglow", "Holloway", "Stargazer", "Frostbeard",
+        "Sunstrider", "Wintergale", "Glimmergem", "Ironbark", "Swiftbow", "Cinderbrook", "Starfall"
+    ]
+
+    ALIGNMENTS = [
+        "Lawful Good", "Neutral Good", "Chaotic Good",
+        "Lawful Neutral", "True Neutral", "Chaotic Neutral",
+        "Lawful Evil", "Neutral Evil", "Chaotic Evil"
+    ]
+
+    BACKGROUNDS = [
+        "Acolyte", "Charlatan", "Criminal", "Entertainer", "Folk Hero", "Guild Artisan",
+        "Hermit", "Noble", "Outlander", "Sage", "Sailor", "Soldier", "Urchin",
+        "Far Traveler", "City Watch", "Investigator", "Knight of the Order", "Mercenary Veteran",
+        "Urban Bounty Hunter", "Cloistered Scholar", "Courtier", "Faction Agent", "Haunted One",
+        "Inheritor", "Waterdhavian Noble"
+    ]
+
+    PERSONALITY_TRAITS = [
+        "I am always polite and respectful.",
+        "I’m a sucker for a pretty face.",
+        "I don’t like to get my hands dirty.",
+        "I use long words in an attempt to sound smarter.",
+        "I quote (sometimes inaccurately) sacred texts and proverbs in almost every situation.",
+        "I am always calm, no matter what the situation. I never raise my voice or let my emotions control me.",
+        "I’m a hopeless romantic, always looking for that special someone.",
+        "I have a crude sense of humor.",
+        "I get bored easily and need new thrills.",
+        "I judge others by their actions, not their words.",
+        "I have a high opinion of myself.",
+        "I am secretly a coward.",
+        "I'm always cheerful and optimistic.",
+        "I always have a plan.",
+        "I put too much trust in those who wield power.",
+        "I am easily distracted by the promise of wealth.",
+        "I am slow to trust others.",
+        "I speak my mind, even if it's unpopular.",
+        "I enjoy being the center of attention."
+    ]
+
+    IDEALS = [
+        "**Beauty:** When I create something, I do it to beautify the world. (Good)",
+        "**Charity:** I always try to help those in need, no matter what the personal cost. (Good)",
+        "**Creativity:** The world is a canvas; my actions are the paint. (Chaotic)",
+        "**Domination:** I will conquer anyone who stands in my way. (Evil)",
+        "**Duty:** It is my duty to protect those who cannot protect themselves. (Lawful)",
+        "**Enlightenment:** Knowledge is the path to power and self-improvement. (Any)",
+        "**Freedom:** Everyone should be free to pursue their own destiny. (Chaotic)",
+        "**Glory:** I will earn a place in the legends of my people. (Any)",
+        "**Greed:** I'm only in it for the money. (Evil)",
+        "**Honor:** I am bound by my word. (Lawful)",
+        "**Justice:** I stand for what is fair and just. (Lawful Good)",
+        "**Might:** The strong survive, the weak perish. (Evil)",
+        "**Respect:** All people, rich or poor, deserve respect. (Good)",
+        "**Responsibility:** I must protect those whom I am responsible for. (Good)",
+        "**Self-Improvement:** The goal of a life is the betterment of oneself. (Any)",
+        "**Tradition:** The old ways are the best ways. (Lawful)",
+        "**Truth:** Deceit is never acceptable. (Lawful Good)"
+    ]
+
+    BONDS = [
+        "I will protect my friends and family above all else.",
+        "My village is my home, and I will defend it.",
+        "I owe my life to the cleric who saved me.",
+        "I aspire to be like my mentor.",
+        "I carry a memento of a lost loved one.",
+        "I am sworn to a secret society.",
+        "I seek to avenge the death of someone I loved.",
+        "My honor is my life.",
+        "I am loyal to my sovereign and homeland.",
+        "I am determined to get revenge on those who wronged me."
+    ]
+
+    FLAWS = [
+        "I am quick to anger.",
+        "I am arrogant and boastful.",
+        "I have a strong, unshakeable prejudice against elves/orcs/etc.",
+        "I am overly trusting of strangers.",
+        "I am easily distracted by gold or treasure.",
+        "I am too proud to ask for help.",
+        "I have a terrible temper.",
+        "I am afraid of heights/spiders/enclosed spaces.",
+        "I tend to blame others for my mistakes.",
+        "I am easily manipulated by flattery.",
+        "I would rather die than betray a friend.",
+        "I am haunted by my past mistakes.",
+        "I have a secret, shameful vice.",
+        "I get by with a little help from my friends... or maybe just a little too much help.",
+        "I can’t resist a pretty face or a clever remark."
+    ]
+
+    # New: Physical Characteristics
+    EYE_COLORS = ["Blue", "Brown", "Green", "Hazel", "Grey", "Amber", "Black", "Violet", "Gold"]
+    HAIR_COLORS = ["Black", "Brown", "Blonde", "Red", "Auburn", "White", "Silver", "Grey", "Dark Blue", "Green"]
+    SKIN_COLORS = ["Fair", "Pale", "Light", "Tanned", "Olive", "Dark", "Ebon", "Ashy", "Reddish-Brown", "Greenish", "Scaly (varies)"]
+    # Heights and Weights will be generated within ranges for flexibility
+
+    # New: Starting Equipment/Wealth
+    STARTING_EQUIPMENT = [
+        "A simple set of traveler's clothes, a backpack, and 10 gp.",
+        "Leather armor, a shortsword, a light crossbow with 20 bolts, and 25 gp.",
+        "A staff, a spellbook, components pouch, and 15 gp.",
+        "Chain mail, a martial weapon, a shield, and a holy symbol.",
+        "A dagger, a set of common clothes, a pouch containing 5 gp, and a disguise kit.",
+        "A worn backpack, a waterskin, 5 days of rations, and a tattered map.",
+        "A set of artisan's tools, a pouch with 10 gp, and a half-finished masterpiece."
+    ]
+
+
+    # Ability Score Standard Array
+    STANDARD_ARRAY = [15, 14, 13, 12, 10, 8]
+
+    # Mapping of classes to their primary and secondary ability scores
+    CLASS_ABILITY_PRIORITIES = {
+        "Barbarian": ["STR", "CON"],
+        "Bard": ["CHA", "DEX"],
+        "Cleric": ["WIS", "STR"], # STR or CON, let's pick STR for variety
+        "Druid": ["WIS", "CON"],
+        "Fighter": ["STR", "CON"], # Could be DEX, but STR is common default
+        "Monk": ["DEX", "WIS"],
+        "Paladin": ["STR", "CHA"],
+        "Ranger": ["DEX", "WIS"],
+        "Rogue": ["DEX", "CHA"],
+        "Sorcerer": ["CHA", "CON"],
+        "Warlock": ["CHA", "CON"],
+        "Wizard": ["INT", "CON"],
+        "Artificer": ["INT", "CON"],
+        "Blood Hunter": ["DEX", "INT"], # Or STR depending on build
+        "Mystic": ["INT", "WIS"], # Could be INT or WIS
+        # Add specific subclasses if they have different priorities
+        "Bard (College of Lore)": ["CHA", "DEX"],
+        "Cleric (Life Domain)": ["WIS", "CON"],
+        "Druid (Circle of the Moon)": ["WIS", "CON"],
+        "Fighter (Battle Master)": ["STR", "CON"],
+        "Monk (Way of the Open Hand)": ["DEX", "WIS"],
+        "Paladin (Oath of Devotion)": ["STR", "CHA"],
+        "Ranger (Hunter)": ["DEX", "WIS"],
+        "Rogue (Thief)": ["DEX", "CHA"],
+        "Sorcerer (Draconic Bloodline)": ["CHA", "CON"],
+        "Warlock (The Fiend)": ["CHA", "CON"],
+        "Wizard (School of Evocation)": ["INT", "CON"],
+        "Artificer (Alchemist)": ["INT", "CON"],
+        "Barbarian (Path of the Totem Warrior)": ["STR", "CON"]
+    }
+
+
+    # --- Function to generate ability scores ---
+    def generate_ability_scores(character_class):
+        scores = sorted(STANDARD_ARRAY, reverse=True) # Start with highest to lowest
+        abilities = ["STR", "DEX", "CON", "INT", "WIS", "CHA"]
+        ability_scores = {}
+
+        # Get primary and secondary abilities for the class
+        # Use .get with a default to prevent KeyError for new/unmapped classes
+        priorities = CLASS_ABILITY_PRIORITIES.get(character_class, ["STR", "CON"])
+        primary_stat = priorities[0]
+        secondary_stat = priorities[1] if len(priorities) > 1 else None
+
+        # Assign primary stat
+        if primary_stat in abilities:
+            ability_scores[primary_stat] = scores.pop(0)
+        else: # Fallback if primary_stat is invalid or not in list
+            primary_stat = random.choice([a for a in abilities if a not in ability_scores])
+            ability_scores[primary_stat] = scores.pop(0)
+
+        # Assign secondary stat
+        if secondary_stat and secondary_stat in abilities and secondary_stat not in ability_scores:
+            ability_scores[secondary_stat] = scores.pop(0)
+        else: # Fallback if secondary_stat is invalid, already used, or not defined
+            temp_abilities = [a for a in abilities if a not in ability_scores]
+            if temp_abilities:
+                chosen_secondary = random.choice(temp_abilities)
+                ability_scores[chosen_secondary] = scores.pop(0)
+
+        # Randomly assign remaining scores to remaining abilities
+        remaining_abilities = [a for a in abilities if a not in ability_scores]
+        random.shuffle(remaining_abilities)
+        for i, ability in enumerate(remaining_abilities):
+            ability_scores[ability] = scores[i]
+
+        return ability_scores
+
+
+    # --- Functions for new characteristics ---
+    def generate_height_weight(race):
+        # Simplistic ranges, could be expanded for racial variations
+        if "Dwarf" in race:
+            height = random.randint(4, 5) # ft
+            weight = random.randint(150, 250) # lbs
+        elif "Halfling" in race or "Gnome" in race:
+            height = random.randint(2, 4)
+            weight = random.randint(40, 90)
+        elif "Orc" in race or "Goliath" in race or "Dragonborn" in race:
+            height = random.randint(6, 8)
+            weight = random.randint(200, 350)
+        else: # Default for most medium humanoids
+            height = random.randint(5, 7)
+            weight = random.randint(120, 220)
+        return f"{height}'{random.randint(0,11)}\"", f"{weight} lbs"
+
+    # --- Display content based on sidebar selection ---
+    if selected_tab == "Quick Creator":
+        st.header("Quick Character Creator")
+        st.write("Generate ideas for quick characters with a few clicks.")
+
+        # Initialize session state for character results if not present
+        if 'generated_character' not in st.session_state:
+            st.session_state.generated_character = None
+
+        if st.button("Generate Random Character", key="generate_character_btn"):
+            random_gender = random.choice(["Male", "Female"])
+            if random_gender == "Male":
+                name = random.choice(MALE_NAMES)
+            else:
+                name = random.choice(FEMALE_NAMES)
+
+            surname = random.choice(SURNAMES)
+            full_name = f"{name} {surname}"
+            race = random.choice(FANTASY_RACES)
+            character_class = random.choice(FANTASY_CLASSES)
+            alignment = random.choice(ALIGNMENTS)
+            background = random.choice(BACKGROUNDS)
+            personality_trait = random.choice(PERSONALITY_TRAITS)
+            ideal = random.choice(IDEALS)
+            bond = random.choice(BONDS)
+            flaw = random.choice(FLAWS)
+            
+            ability_scores = generate_ability_scores(character_class)
+
+            # New Physical Characteristics
+            height, weight = generate_height_weight(race)
+            eye_color = random.choice(EYE_COLORS)
+            hair_color = random.choice(HAIR_COLORS)
+            skin_color = random.choice(SKIN_COLORS)
+
+            # New Starting Equipment
+            starting_equipment = random.choice(STARTING_EQUIPMENT)
+
+
+            st.session_state.generated_character = {
+                "Name": full_name,
+                "Race": race,
+                "Class": character_class,
+                "Alignment": alignment,
+                "Background": background,
+                "Personality Trait": personality_trait,
+                "Ideal": ideal,
+                "Bond": bond,
+                "Flaw": flaw,
+                "Ability Scores": ability_scores,
+                "Physical Characteristics": {
+                    "Height": height,
+                    "Weight": weight,
+                    "Eye Color": eye_color,
+                    "Hair Color": hair_color,
+                    "Skin Color": skin_color
+                },
+                "Starting Equipment": starting_equipment
+            }
+            # No rerun needed here, as the display is below and will update naturally
+
+        if st.session_state.generated_character:
+            st.markdown("---") # Separator
+            st.subheader("Generated Character Concept")
+            st.markdown(f"**Name:** {st.session_state.generated_character['Name']}")
+            st.markdown(f"**Race:** {st.session_state.generated_character['Race']}")
+            st.markdown(f"**Class:** {st.session_state.generated_character['Class']}")
+            st.markdown(f"**Alignment:** {st.session_state.generated_character['Alignment']}")
+            st.markdown(f"**Background:** {st.session_state.generated_character['Background']}")
+            st.markdown(f"**Personality Trait:** {st.session_state.generated_character['Personality Trait']}")
+            st.markdown(f"**Ideal:** {st.session_state.generated_character['Ideal']}")
+            st.markdown(f"**Bond:** {st.session_state.generated_character['Bond']}")
+            st.markdown(f"**Flaw:** {st.session_state.generated_character['Flaw']}")
+            
+            st.markdown("---") # Separator
+            st.subheader("Ability Scores")
+            # Display ability scores in a clear, consistent order
+            for stat in ["STR", "DEX", "CON", "INT", "WIS", "CHA"]:
+                st.markdown(f"**{stat}:** {st.session_state.generated_character['Ability Scores'].get(stat, 'N/A')}")
+
+            st.markdown("---") # Separator
+            st.subheader("Physical Characteristics")
+            physical_chars = st.session_state.generated_character['Physical Characteristics']
+            st.markdown(f"**Height:** {physical_chars['Height']}")
+            st.markdown(f"**Weight:** {physical_chars['Weight']}")
+            st.markdown(f"**Eye Color:** {physical_chars['Eye Color']}")
+            st.markdown(f"**Hair Color:** {physical_chars['Hair Color']}")
+            st.markdown(f"**Skin Color:** {physical_chars['Skin Color']}")
+
+            st.markdown("---") # Separator
+            st.subheader("Starting Equipment")
+            st.markdown(f"{st.session_state.generated_character['Starting Equipment']}")
+
+
+    elif selected_tab == "Bestiary":
+        st.header("Monster Bestiary")
+        # Placeholder for Monster Bestiary content
+        st.write("This section will display your monster data.")
+        # You will integrate your existing Bestiary code here later.
+        pass
+
+    elif selected_tab == "Map Generator":
+        st.header("Map Generator")
+        # Placeholder for Map Generator content
+        st.write("This section will generate maps.")
+        # You will integrate your Map Generator code here later.
+        pass
+
+    elif selected_tab == "Map Library":
+        st.header("Map Library")
+        # Placeholder for Map Library content
+        st.write("This section will manage your generated maps.")
+        # You will integrate your Map Library code here later.
+        pass
+
+    elif selected_tab == "Campaign Manager":
+        st.header("Campaign Manager")
+        # Placeholder for Campaign Manager content
+        st.write("This section will manage your campaigns.")
+        # You will integrate your existing Campaign Manager code here later.
+        pass
+
+    elif selected_tab == "Encounter Command Center":
+        st.header("Encounter Command Center")
+        # Placeholder for Encounter Commander content
+        st.write("This section will handle your encounters.")
+        # You will integrate your existing Encounter Commander code here later.
+        pass
+
+# --- Configuration Constants (Keep these as they are your app's data structures) ---
 MAPS_FOLDER = "maps"
 MONSTERS_DATA_PATH = "data/monsters.json"
 CAMPAIGN_DATA_PATH = "data/campaigns.json"
@@ -23,12 +576,11 @@ INITIAL_ENCOUNTER_DATA_PATH = "DM Helper - Encounter Command Center (1).csv"  # 
 FOREST_STYLE_ORGANIC = "organic"
 FOREST_STYLE_RIGID = "rigid"
 
-# --- Encounter Data Persistence Functions ---
+# --- Encounter Data Persistence Functions (Keep these) ---
 def save_encounter_data(df):
     """Saves the current encounter DataFrame to a CSV file."""
     try:
         df.to_csv(ENCOUNTER_DATA_PATH, index=False)
-        # st.success("Encounter data saved successfully!") # Removed this as it can be spammy
     except Exception as e:
         st.error(f"Error saving encounter data: {e}")
 
@@ -36,18 +588,18 @@ def load_encounter_data():
     """Loads encounter data from a CSV file if it exists."""
     if os.path.exists(ENCOUNTER_DATA_PATH):
         try:
-            df = pd.read_csv(ENCOUNTER_DATA_PATH, dtype={'Conditions': str}) # Explicitly load Conditions as string
+            df = pd.read_csv(ENCOUNTER_DATA_PATH, dtype={'Conditions': str})
             return df
         except Exception as e:
             st.error(f"Error loading encounter data: {e}")
-            return pd.DataFrame(columns=DEFAULT_ENCOUNTER_COLUMNS) # Return empty with default columns on error
-    return pd.DataFrame(columns=DEFAULT_ENCOUNTER_COLUMNS) # Return empty with default columns if file doesn't exist
+            return pd.DataFrame(columns=DEFAULT_ENCOUNTER_COLUMNS)
+    return pd.DataFrame(columns=DEFAULT_ENCOUNTER_COLUMNS)
 
 # Define default monster columns for an empty Bestiary
 DEFAULT_MONSTER_COLUMNS = [
-    "Name", "Type", "CR", "HP", "AC", "Speed", "Saves", "Skills", 
-    "Damage Immunities", "Damage Resistances", "Damage Vulnerabilities", 
-    "Condition Immunities", "Senses", "Languages", "Challenge", 
+    "Name", "Type", "CR", "HP", "AC", "Speed", "Saves", "Skills",
+    "Damage Immunities", "Damage Resistances", "Damage Vulnerabilities",
+    "Condition Immunities", "Senses", "Languages", "Challenge",
     "Proficiency Bonus", "Actions", "Legendary Actions", "Reactions", "Description"
 ]
 
@@ -60,68 +612,33 @@ DEFAULT_NPC_COLUMNS = ["Name", "Role", "Location", "Status", "Notes"]
 DEFAULT_CAMPAIGN_MONSTER_COLUMNS = ["Name", "Type", "CR", "Notes"]
 DEFAULT_PLOT_LINE_COLUMNS = ["Title", "Status", "Synopsis", "Key NPCs", "Locations"]
 
-# Place this function definition near the top of your script,
-# usually after imports and other helper function definitions.
-
+# --- Callbacks for Data Persistence (Keep these) ---
 def update_bestiary_df_callback():
     """Callback to update monsters_df in session state and save it."""
-    # The value of the data editor (with key "bestiary_editor") is automatically
-    # available as st.session_state.bestiary_editor.
-    # It directly modifies st.session_state.monsters_df if that DataFrame was passed.
-    # So, we just need to save the current state of st.session_state.monsters_df.
     save_monsters(st.session_state.monsters_df)
     st.success("Bestiary updated and saved automatically!")
 
 def update_encounter_df_callback():
     """Callback to update current_encounter_df in session state and save it."""
-    # The value of the data editor (with key "encounter_data_editor") is automatically
-    # available in st.session_state[key].
     st.session_state.current_encounter_df = st.session_state.encounter_data_editor
     save_encounter_data(st.session_state.current_encounter_df)
     st.success("Encounter updated and saved automatically!")
 
-# Place this function definition near the top of your script,
-# typically after imports and other helper function definitions.
-
-# Place this function definition near the top of your script,
-# typically after imports and other helper function definitions.
-
 def update_campaign_sublist_callback(sublist_key):
     """Callback to update players/NPCs sublist in session state based on data editor changes."""
-    st.write(f"--- Debugging update_campaign_sublist_callback for {sublist_key} ---")
     try:
-        # The full, edited DataFrame is available directly in st.session_state[key]
         edited_df = st.session_state[f"campaign_{sublist_key}_editor"]
-        st.write(f"Content of edited_df from data_editor (as dict records):")
-        st.json(edited_df.to_dict('records')) # Display the raw data from the editor
-
-        # Ensure the 'Name' column is present before proceeding
-        if "Name" not in edited_df.columns:
-            st.error("Error: 'Name' column not found in edited data. Cannot save.")
-            return
-
-        # Convert the DataFrame to a list of dictionaries (records)
         filtered_records = []
         for record in edited_df.to_dict('records'):
-            # Check if the row is truly empty (all relevant values are None, empty string, or NaN)
             is_truly_empty_row = all(
                 (pd.isna(v) or (isinstance(v, str) and not v.strip()))
                 for k, v in record.items() if k not in ["_index"]
             )
-            
             if not is_truly_empty_row:
                 filtered_records.append(record)
 
-        st.write(f"Content after filtering empty rows (filtered_records):")
-        st.json(filtered_records) # Display what will actually be saved for the sublist
-
-        # Update the specific sublist (players or npcs) in selected_campaign_details
         st.session_state.selected_campaign_details[sublist_key] = filtered_records
-        
-        st.write(f"st.session_state.selected_campaign_details['{sublist_key}'] before saving:")
-        st.json(st.session_state.selected_campaign_details[sublist_key]) # Display the updated sublist
 
-        # Save the entire campaign data after updating the sublist
         if st.session_state.current_campaign_index != -1:
             st.session_state.campaigns[st.session_state.current_campaign_index] = st.session_state.selected_campaign_details
             save_campaigns(st.session_state.campaigns)
@@ -130,208 +647,149 @@ def update_campaign_sublist_callback(sublist_key):
             st.warning("Cannot auto-save sublist changes for an unsaved new campaign. Please 'Save Campaign Details' first.")
     except Exception as e:
         st.error(f"An error occurred in update_campaign_sublist_callback for '{sublist_key}': {e}")
-    st.write("--- End update_campaign_sublist_callback debug ---")
 
-# Map generation constraints
+# Map generation constraints (Keep these)
 MIN_ROOM_WIDTH = 5
 MAX_ROOM_WIDTH = 8
 MIN_ROOM_HEIGHT = 4
 MAX_ROOM_HEIGHT = 6
 MIN_MAP_REQUIRED_WIDTH = MAX_ROOM_WIDTH + 4
 MIN_MAP_REQUIRED_HEIGHT = MAX_ROOM_HEIGHT + 4
-MAX_ELEMENTS = 10  # Max number of rooms/clearings
-MAX_PLACEMENT_ATTEMPTS = 500  # Max attempts to place a room/clearing or item
+MAX_ELEMENTS = 10
+MAX_PLACEMENT_ATTEMPTS = 500
 
-# Map Tile Definitions
+# Map Tile Definitions (Keep these)
 EMPTY_SPACE = ' '
 WALL = '#'
 DOOR = 'D'
 ENTRANCE = 'E'
 TREASURE_SYMBOL = 'T'
 TRAP_SYMBOL = 'X'
-VOID_SYMBOL = 'V' # New: Symbol for voids/pits
+VOID_SYMBOL = 'V'
 MONSTER_SYMBOL_PREFIX = 'M-'
 ROOM_FLOOR = '.'
 HALLWAY = '~'
-FOREST_DENSE = '&' # Represents dense trees
-FOREST_LIGHT = 't' # Represents light trees
-FOREST_CLEARING = '.' # Represents clearings in a forest
-RIVER_TILE = '=' # For rivers
-STREAM_TILE = ';' # For streams
-PLAYER_SYMBOL = '@' # Defined: Symbol for player character
-ITEM_SYMBOL = 'I' # Defined: Generic symbol for items (used in MAP_COLORS)
-FOREST_TRAIL = '-' # Defined: For trails in a forest (was implicitly used in MAP_COLORS)
+FOREST_DENSE = '&'
+FOREST_LIGHT = 't'
+FOREST_CLEARING = '.'
+RIVER_TILE = '='
+STREAM_TILE = ';'
+PLAYER_SYMBOL = '@'
+ITEM_SYMBOL = 'I'
+FOREST_TRAIL = '-'
 EXIT_SYMBOL = 'Z'
 
-# Ensure data directories exist
+# Ensure data directories exist (Keep these)
 os.makedirs("data", exist_ok=True)
 os.makedirs(MAPS_FOLDER, exist_ok=True)
 
-# Helper function to load monsters
+# Helper functions to load/save data (Keep these)
 @st.cache_data
 def load_monsters():
-    """
-    Loads monster data from MONSTERS_DATA_PATH (data/monsters.json) into a pandas DataFrame.
-    If the file doesn't exist or is empty/corrupted, it returns an empty DataFrame
-    with predefined columns.
-    """
     if os.path.exists(MONSTERS_DATA_PATH):
         try:
-            with open(MONSTERS_DATA_PATH, 'r', encoding='utf-8') as f: # Added encoding='utf-8' here
+            with open(MONSTERS_DATA_PATH, 'r', encoding='utf-8') as f:
                 monsters_data = json.load(f)
-            
-            # Ensure all default columns are present, adding NaNs for missing ones
             df = pd.DataFrame(monsters_data)
             for col in DEFAULT_MONSTER_COLUMNS:
                 if col not in df.columns:
                     df[col] = pd.NA
-            # Reorder columns to match DEFAULT_MONSTER_COLUMNS
             df = df[DEFAULT_MONSTER_COLUMNS]
             return df
         except json.JSONDecodeError:
             st.warning("Monsters JSON file is corrupted or empty. Starting with an empty Bestiary.")
-            # Ensure the 'data' directory exists even if JSON is bad
             os.makedirs(os.path.dirname(MONSTERS_DATA_PATH), exist_ok=True)
             return pd.DataFrame(columns=DEFAULT_MONSTER_COLUMNS)
     else:
         st.info(f"Monsters JSON file not found at '{MONSTERS_DATA_PATH}'. Creating a new empty Bestiary.")
-        # Ensure the 'data' directory exists before creating a new file
         os.makedirs(os.path.dirname(MONSTERS_DATA_PATH), exist_ok=True)
         return pd.DataFrame(columns=DEFAULT_MONSTER_COLUMNS)
 
-# The save_monsters function should also be present as provided previously:
 def save_monsters(df):
-    """
-    Saves monster data from a pandas DataFrame to MONSTERS_DATA_PATH (data/monsters.json).
-    Ensures the 'data' directory exists.
-    """
     os.makedirs(os.path.dirname(MONSTERS_DATA_PATH), exist_ok=True)
-    with open(MONSTERS_DATA_PATH, 'w', encoding='utf-8') as f: # Added encoding='utf-8' here too
-        # Convert DataFrame to a list of dictionaries before saving to JSON
+    with open(MONSTERS_DATA_PATH, 'w', encoding='utf-8') as f:
         df.to_json(f, orient="records", indent=4)
     st.success("Bestiary saved successfully!")
 
-# Helper function to load campaign data
 def load_campaigns():
-    """
-    Loads campaign data from CAMPAIGN_DATA_PATH (data/campaigns.json) into a list of dictionaries.
-    If the file doesn't exist or is empty/corrupted, it returns an empty list.
-    """
     if os.path.exists(CAMPAIGN_DATA_PATH):
         try:
             with open(CAMPAIGN_DATA_PATH, 'r', encoding='utf-8') as f:
                 campaigns_data = json.load(f)
-            # Ensure it's always a list of dictionaries
             if not isinstance(campaigns_data, list):
                 st.warning("Campaigns JSON file is not in the expected list format. Starting with an empty Campaign Manager.")
                 return []
-            
-            # Ensure each loaded campaign has the necessary sub-lists
             for campaign in campaigns_data:
                 campaign.setdefault("players", [])
                 campaign.setdefault("npcs", [])
-                campaign.setdefault("monsters_in_campaign", []) # Use this for campaign-specific monsters
-                campaign.setdefault("plot_lines", []) # For plot/quest tracking
+                campaign.setdefault("monsters_in_campaign", [])
+                campaign.setdefault("plot_lines", [])
             return campaigns_data
         except json.JSONDecodeError:
             st.warning("Campaigns JSON file is corrupted or empty. Starting with an empty Campaign Manager.")
             return []
     else:
         st.info(f"Campaigns JSON file not found at '{CAMPAIGN_DATA_PATH}'. Creating a new empty Campaign Manager.")
-        # Ensure the 'data' directory exists before creating a new file
         os.makedirs(os.path.dirname(CAMPAIGN_DATA_PATH), exist_ok=True)
         return []
 
-# Helper function to save campaign data
 def save_campaigns(campaigns_list):
-    """
-    Saves campaign data from a list of dictionaries to CAMPAIGN_DATA_PATH (data/campaigns.json).
-    Ensures the 'data' directory exists.
-    """
     os.makedirs(os.path.dirname(CAMPAIGN_DATA_PATH), exist_ok=True)
     with open(CAMPAIGN_DATA_PATH, 'w', encoding='utf-8') as f:
         json.dump(campaigns_list, f, indent=4)
     st.success("Campaigns saved successfully!")
 
-# Dungeon generation helpers
+# Dungeon generation helpers (Keep these)
 def _place_dungeon_elements(grid, num_elements, element_min_w, element_max_w, element_min_h, element_max_h, element_type=ROOM_FLOOR):
     h, w = len(grid), len(grid[0])
     elements_data = {}
     placed_elements_count = 0
-
     for _ in range(MAX_PLACEMENT_ATTEMPTS):
         if placed_elements_count >= num_elements:
             break
-
         current_w = random.randint(element_min_w, element_max_w)
         current_h = random.randint(element_min_h, element_max_h)
-
         start_r = random.randint(1, h - current_h - 2)
         start_c = random.randint(1, w - current_w - 2)
-
         end_r = start_r + current_h
         end_c = start_c + current_w
-
-        # Check for overlap with existing placed elements or walls
         overlap = False
-        for r_check in range(start_r - 1, end_r + 2): # Check with padding (1 unit around the proposed element)
+        for r_check in range(start_r - 1, end_r + 2):
             for c_check in range(start_c - 1, end_c + 2):
                 if not (0 <= r_check < h and 0 <= c_check < w):
                     overlap = True
                     break
-
-                # --- CRITICAL MODIFICATION FOR PLACEMENT LOGIC ---
                 if element_type == FOREST_CLEARING:
-                    # For forest clearings:
-                    # The core area (where the clearing itself goes) must be EMPTY_SPACE.
-                    # The padding/border area (where walls *would* go, or just the surrounding terrain)
-                    # can be either EMPTY_SPACE or FOREST_LIGHT.
                     is_core_area = (start_r <= r_check < end_r and start_c <= c_check < end_c)
-
                     if is_core_area:
-                        # Core clearing area must be truly empty
                         if grid[r_check][c_check] != EMPTY_SPACE:
                             overlap = True
                             break
-                    else: # This is the padding area around the core clearing
-                        # Padding can be empty space or light forest
+                    else:
                         if grid[r_check][c_check] != EMPTY_SPACE and grid[r_check][c_check] != FOREST_LIGHT:
                             overlap = True
                             break
-                else: # For other element types (like ROOM_FLOOR for dungeons), keep the strict EMPTY_SPACE check
+                else:
                     if grid[r_check][c_check] != EMPTY_SPACE:
                         overlap = True
                         break
-            # --- END CRITICAL MODIFICATION ---
             if overlap:
                 break
-
         if not overlap:
-            # Place the element
             element_name = f"Element_{placed_elements_count + 1}"
             elements_data[element_name] = {'coords': []}
             for r in range(start_r, end_r):
                 for c in range(start_c, end_c):
                     grid[r][c] = element_type
                     elements_data[element_name]['coords'].append((r,c))
-
-            # Place walls around the element (this part is fine, as WALL will replace EMPTY_SPACE or FOREST_LIGHT)
             for r in range(start_r - 1, end_r + 1):
                 for c in range(start_c - 1, end_c + 1):
-                    # Ensure we only replace empty or light forest with walls, not dense forest or other elements
                     if grid[r][c] == EMPTY_SPACE or grid[r][c] == FOREST_LIGHT:
                         grid[r][c] = WALL
-
             placed_elements_count += 1
-
-    print(f"DEBUG: _place_dungeon_elements FINAL return (Type: {element_type}):")
-    print(f"  elements_data: {elements_data}")
-    print(f"  placed_elements_count: {placed_elements_count}")
     return grid, elements_data, placed_elements_count
 
 def _connect_elements(grid, elements_data, element_type=ROOM_FLOOR):
-    # This is a simplified connection logic for demonstration.
-    # In a real dungeon generator, you'd use algorithms like BSP trees or Randomized Prim's.
     element_centers = []
     for name, data in elements_data.items():
         if data['coords']:
@@ -342,96 +800,65 @@ def _connect_elements(grid, elements_data, element_type=ROOM_FLOOR):
             center_r = (min_r + max_r) // 2
             center_c = (min_c + max_c) // 2
             element_centers.append((center_r, center_c, name))
-    
     if len(element_centers) < 2:
         return grid
-
-    # Connect all elements to the first element's center
     first_center_r, first_center_c, _ = element_centers[0]
-
     for i in range(1, len(element_centers)):
         target_r, target_c, _ = element_centers[i]
-        
-        # Simple L-shaped corridor
         curr_r, curr_c = first_center_r, first_center_c
-        
         while curr_r != target_r:
             grid[curr_r][curr_c] = HALLWAY
             curr_r += 1 if target_r > curr_r else -1
-            if grid[curr_r][curr_c] == WALL: # If we hit a wall, make a door
+            if grid[curr_r][curr_c] == WALL:
                 grid[curr_r][curr_c] = DOOR
-        
         while curr_c != target_c:
             grid[curr_r][curr_c] = HALLWAY
             curr_c += 1 if target_c > curr_c else -1
-            if grid[curr_r][curr_c] == WALL: # If we hit a wall, make a door
+            if grid[curr_r][curr_c] == WALL:
                 grid[curr_r][curr_c] = DOOR
-        
-        grid[curr_r][curr_c] = HALLWAY # Mark the final cell
-    
+        grid[curr_r][curr_c] = HALLWAY
     return grid
 
 def _generate_forest_terrain(grid, width, height, density_ratio=0.05):
-    # This function uses the new forest symbols
     for r in range(height):
         for c in range(width):
             if random.random() < density_ratio:
                 grid[r][c] = FOREST_DENSE
-            elif random.random() < density_ratio * 2: # Lighter density for light trees
+            elif random.random() < density_ratio * 2:
                 grid[r][c] = FOREST_LIGHT
             else:
-                grid[r][c] = EMPTY_SPACE # Use EMPTY_SPACE for pathable areas not explicitly clearings
-
-    # Ensure clearings are distinct
-    #for name, data in st.session_state.map_elements_data.items():
-        #if "clearing" in name.lower() or "element" in name.lower(): # Assuming "clearing" is in element name
-             #for r, c in data['coords']:
-                 #if 0 <= r < height and 0 <= c < width:
-                     #grid[r][c] = FOREST_CLEARING # Apply clearing symbol to element areas
-    
+                grid[r][c] = EMPTY_SPACE
     return grid
 
 def _place_entrance(grid, map_type, elements_data):
     h, w = len(grid), len(grid[0])
-    entrance_r, entrance_c = -1, -1 # Initialize with invalid coordinates
-
-    # --- Dungeon and Mountain: Linked to a hallway/room ---
+    entrance_r, entrance_c = -1, -1
     if map_type in ["Dungeon", "Mountain"]:
         suitable_spots = []
         for element_name, data in elements_data.items():
             for r, c in data['coords']:
-                # Consider the element's own valid connection points (ROOM_FLOOR or HALLWAY)
                 if grid[r][c] in [ROOM_FLOOR, HALLWAY]:
                     suitable_spots.append((r, c))
-                # Also consider adjacent EMPTY_SPACE cells
                 for dr, dc in [(0, 1), (0, -1), (1, 0), (-1, 0)]:
                     nr, nc = r + dr, c + dc
                     if 0 <= nr < h and 0 <= nc < w and grid[nr][nc] == EMPTY_SPACE:
                         suitable_spots.append((nr, nc))
-        
         if suitable_spots:
-            # Choose a random unique suitable spot from the collected list
             entrance_r, entrance_c = random.choice(list(set(suitable_spots)))
         else:
-            # Fallback if no elements or suitable spots found (e.g., very small map, 0 elements)
-            # Try to place on the first available EMPTY_SPACE from (1,1) inwards
             for r_scan in range(1, h - 1):
                 for c_scan in range(1, w - 1):
                     if grid[r_scan][c_scan] == EMPTY_SPACE:
                         entrance_r, entrance_c = r_scan, c_scan
                         break
                 if entrance_r != -1: break
-
-    # --- Forest, Desert, Underdark: At the end of the grid (random edge) ---
     elif map_type in ["Forest", "Desert", "Underdark"]:
         side = random.choice(["top", "bottom", "left", "right"])
-        
         if side == "top":
             entrance_r = 0
-            # Find a non-wall column on the top edge (avoiding corners 0,0 and 0,w-1)
             valid_cols = [c for c in range(1, w - 1) if grid[0][c] != WALL]
             if valid_cols: entrance_c = random.choice(valid_cols)
-            else: entrance_c = random.randint(1, w - 2) # Fallback if only walls
+            else: entrance_c = random.randint(1, w - 2)
         elif side == "bottom":
             entrance_r = h - 1
             valid_cols = [c for c in range(1, w - 1) if grid[h-1][c] != WALL]
@@ -447,70 +874,51 @@ def _place_entrance(grid, map_type, elements_data):
             valid_rows = [r for r in range(1, h - 1) if grid[r][w-1] != WALL]
             if valid_rows: entrance_r = random.choice(valid_rows)
             else: entrance_r = random.randint(1, h - 2)
-        
-        # --- Underdark specific: Generate a pathway from edge entrance to a hallway or room ---
         if map_type == "Underdark":
             if elements_data and entrance_r != -1 and entrance_c != -1:
                 closest_element_coord = None
                 min_dist = float('inf')
-                
-                # Find the closest existing hallway or room floor to connect to
                 for element_name, data in elements_data.items():
                     for r_elem, c_elem in data['coords']:
-                        if grid[r_elem][c_elem] in [ROOM_FLOOR, HALLWAY]: # Connect only to valid element types
+                        if grid[r_elem][c_elem] in [ROOM_FLOOR, HALLWAY]:
                             dist = abs(entrance_r - r_elem) + abs(entrance_c - c_elem)
                             if dist < min_dist:
                                 min_dist = dist
                                 closest_element_coord = (r_elem, c_elem)
-                
                 if closest_element_coord:
                     curr_r, curr_c = entrance_r, entrance_c
                     target_r, target_c = closest_element_coord
-
-                    # Draw horizontal segment of the path
                     while curr_c != target_c:
-                        # Only draw path on EMPTY_SPACE to avoid overwriting existing features
                         if grid[curr_r][curr_c] == EMPTY_SPACE:
-                            grid[curr_r][curr_c] = HALLWAY 
+                            grid[curr_r][curr_c] = HALLWAY
                         if curr_c < target_c: curr_c += 1
                         else: curr_c -= 1
-                    
-                    # Draw vertical segment of the path
                     while curr_r != target_r:
                         if grid[curr_r][curr_c] == EMPTY_SPACE:
                             grid[curr_r][curr_c] = HALLWAY
                         if curr_r < target_r: curr_r += 1
                         else: curr_r -= 1
-                    
-                    # Ensure the target element's cell itself is marked as HALLWAY if it was empty
                     if grid[target_r][target_c] == EMPTY_SPACE:
                         grid[target_r][target_c] = HALLWAY
-
-
-    # --- Final Entrance Placement at the determined coordinates ---
     if 0 <= entrance_r < h and 0 <= entrance_c < w:
-        # If the chosen spot is a WALL, try to find an adjacent non-wall spot
         if grid[entrance_r][entrance_c] == WALL:
             found_clear_spot = False
-            for dr, dc in [(0,0), (0,1), (0,-1), (1,0), (-1,0)]: # Check current spot then neighbors
+            for dr, dc in [(0,0), (0,1), (0,-1), (1,0), (-1,0)]:
                 nr, nc = entrance_r + dr, entrance_c + dc
                 if 0 <= nr < h and 0 <= nc < w and grid[nr][nc] != WALL:
                     entrance_r, entrance_c = nr, nc
                     found_clear_spot = True
                     break
             if not found_clear_spot:
-                # If still stuck on a wall, fall back to finding first empty spot from (1,1)
                 for r_scan in range(1, h - 1):
                     for c_scan in range(1, w - 1):
                         if grid[r_scan][c_scan] == EMPTY_SPACE:
                             entrance_r, entrance_c = r_scan, c_scan
                             break
                     if entrance_r != -1: break
-
         grid[entrance_r][entrance_c] = ENTRANCE
         elements_data["Entrance"] = {'coords': [(entrance_r, entrance_c)]}
     else:
-        # Absolute fallback: if no valid spot found, place at (1,1) or a nearby alternative
         if grid[1][1] != WALL:
             grid[1][1] = ENTRANCE
             elements_data["Entrance"] = {'coords': [(1,1)]}
@@ -520,13 +928,9 @@ def _place_entrance(grid, map_type, elements_data):
         elif grid[2][1] != WALL:
             grid[2][1] = ENTRANCE
             elements_data["Entrance"] = {'coords': [(2,1)]}
-        # Further fallback logic can be added here if needed for very constrained maps
-
     return grid, elements_data
 
-
 def get_unique_token_for_item(grid, prefix="I"):
-    """Generates a unique incremental token for items like monsters (M-1, M-2)."""
     max_num = 0
     for r in range(len(grid)):
         for c in range(len(grid[0])):
@@ -537,103 +941,65 @@ def get_unique_token_for_item(grid, prefix="I"):
                     if num > max_num:
                         max_num = num
                 except ValueError:
-                    pass # Not a valid number
+                    pass
     return f"{prefix}-{max_num + 1}"
 
 def place_item_on_grid(grid, item_symbol, item_details=None, room_name=None, map_type=None):
-    """
-    Places a single item on the grid in an empty (or specified) location.
-    Args:
-        grid (list of list of str): The map grid.
-        item_symbol (str): The symbol to place (e.g., 'T', 'X', 'M-1').
-        item_details (dict, optional): Dictionary with details about the item (e.g., {'type': 'gold'}).
-        room_name (str, optional): The name of the room/clearing to place the item in. If None or "Random", places randomly.
-        map_type (str, optional): The type of map (e.g., "Dungeon", "Forest"). Used for smarter placement.
-    Returns:
-        tuple: (grid, success_boolean, placed_coords)
-    """
     h, w = len(grid), len(grid[0])
     placed = False
     attempts = 0
     placed_coords = None
-
     target_coords_pool = []
     if room_name and room_name != "Random" and st.session_state.map_elements_data:
         element_data = st.session_state.map_elements_data.get(room_name, {})
         target_coords_pool = element_data.get('coords', [])
         if not target_coords_pool:
             st.warning(f"Area '{room_name}' not found for placing item '{item_symbol}'. Attempting random placement.")
-            room_name = "Random" # Fallback to random if area not found
-
+            room_name = "Random"
     while not placed and attempts < MAX_PLACEMENT_ATTEMPTS:
         if room_name == "Random" or not room_name:
             r, c = random.randint(0, h - 1), random.randint(0, w - 1)
         else:
-            if not target_coords_pool: # If room_name was invalid/empty coords
+            if not target_coords_pool:
                 r, c = random.randint(0, h - 1), random.randint(0, w - 1)
             else:
                 r, c = random.choice(target_coords_pool)
-
-        # Determine valid base tiles for placement based on map type
         valid_base_tiles = []
         if map_type in ["Dungeon", "Town"]:
             valid_base_tiles = [ROOM_FLOOR, HALLWAY, ENTRANCE, EMPTY_SPACE]
         elif map_type == "Forest":
             valid_base_tiles = [FOREST_CLEARING, FOREST_LIGHT, EMPTY_SPACE, ENTRANCE]
-            # Traps can also be hidden in dense forest
             if item_symbol == TRAP_SYMBOL:
                 valid_base_tiles.append(FOREST_DENSE)
         elif map_type in ["Sea", "Desert", "Mountain", "Underdark"]:
             valid_base_tiles = [EMPTY_SPACE, ROOM_FLOOR, HALLWAY, FOREST_CLEARING, FOREST_LIGHT, FOREST_DENSE, ENTRANCE, WALL]
-            # For mountain/underdark, items can be in cave walls, for sea/desert in "empty" water/sand
-            # Exclude only explicit voids
             valid_base_tiles = [tile for tile in valid_base_tiles if tile != VOID_SYMBOL]
-        else: # Default to general walkable tiles
+        else:
             valid_base_tiles = [ROOM_FLOOR, HALLWAY, FOREST_CLEARING, EMPTY_SPACE, ENTRANCE, DOOR]
-
-        # Check if the cell is suitable
         if grid[r][c] in valid_base_tiles:
-            # Do not place on doors if possible, but allow if no other options in area for non-door items
             if grid[r][c] == DOOR and (item_symbol == TREASURE_SYMBOL or item_symbol == TRAP_SYMBOL or item_symbol.startswith(MONSTER_SYMBOL_PREFIX)):
                 attempts += 1
                 continue
-            
-            # Check if the cell is already occupied by a different item type (M-, T, X, V)
             is_occupied_by_item = False
             if grid[r][c].startswith(MONSTER_SYMBOL_PREFIX) or \
                grid[r][c] == TREASURE_SYMBOL or \
                grid[r][c] == TRAP_SYMBOL or \
                grid[r][c] == VOID_SYMBOL:
                 is_occupied_by_item = True
-            
             if not is_occupied_by_item:
                 grid[r][c] = item_symbol
                 placed = True
                 placed_coords = (r, c)
         attempts += 1
-
     if not placed:
         st.warning(f"Could not place '{item_symbol}' in '{room_name}' after {MAX_PLACEMENT_ATTEMPTS} attempts.")
     return grid, placed, placed_coords
 
 def place_void_on_grid(grid, void_width, void_height, void_name, map_elements_data, area_name=None):
-    """
-    Places a rectangular void/pit on the grid.
-    Args:
-        grid (list of list of str): The map grid.
-        void_width (int): Width of the void.
-        void_height (int): Height of the void.
-        void_name (str): Name of the void (e.g., "Pit 1").
-        map_elements_data (dict): Dictionary of named map elements (rooms, clearings, etc.) and their coords.
-        area_name (str, optional): The name of the area (room, clearing) to place the void in. If None or "Random", places randomly.
-    Returns:
-        tuple: (grid, success_boolean, placed_coords_list)
-    """
     h, w = len(grid), len(grid[0])
     placed = False
     attempts = 0
-    placed_coords_list = [] # Store all coordinates of the void
-
+    placed_coords_list = []
     target_coords_pool = []
     if area_name and area_name != "Random" and map_elements_data:
         element_data = map_elements_data.get(area_name, {})
@@ -641,176 +1007,117 @@ def place_void_on_grid(grid, void_width, void_height, void_name, map_elements_da
         if not target_coords_pool:
             st.warning(f"Area '{area_name}' not found for placing void '{void_name}'. Attempting random placement.")
             area_name = "Random"
-
     while not placed and attempts < MAX_PLACEMENT_ATTEMPTS:
         if area_name == "Random" or not area_name:
-            # Random starting point for the void, prioritizing floor or hallway
             potential_start_coords = []
-            for r_idx in range(h - void_height + 1): # Corrected range to allow full void placement
-                for c_idx in range(w - void_width + 1): # Corrected range to allow full void placement
-                    # Check if the entire proposed void area is suitable (floor or hallway)
+            for r_idx in range(h - void_height + 1):
+                for c_idx in range(w - void_width + 1):
                     is_suitable_area = True
                     for r_check in range(r_idx, r_idx + void_height):
-                        # FIX: Changed c_check + void_width to c_idx + void_width
-                        for c_check in range(c_idx, c_idx + void_width):
+                        for c_check in range(c_idx, c_check + void_width):
                             if grid[r_check][c_check] not in [ROOM_FLOOR, HALLWAY, FOREST_CLEARING, EMPTY_SPACE, ENTRANCE, DOOR]:
                                 is_suitable_area = False
                                 break
-                        if not is_suitable_area:
-                            break
-                    if is_suitable_area:
-                        potential_start_coords.append((r_idx, c_idx))
-            
+                        if not is_suitable_area: break
+                    if is_suitable_area: potential_start_coords.append((r_idx, c_idx))
             if not potential_start_coords:
                 st.warning(f"No suitable random area found for void '{void_name}' of size {void_width}x{void_height}.")
-                return grid, False, [] # No place to put it
-            
+                return grid, False, []
             start_r, start_c = random.choice(potential_start_coords)
-
-        else: # Specific area placement
-            if not target_coords_pool:
-                attempts += 1
-                continue
-
-            # Find a suitable top-left corner within the target area
+        else:
+            if not target_coords_pool: attempts += 1; continue
             suitable_area_coords = []
             for r_el, c_el in target_coords_pool:
-                # Calculate potential top-left corner for the void
-                # This logic tries to fit the void around the element coordinate
                 start_r_cand = r_el - random.randint(0, void_height - 1)
                 start_c_cand = c_el - random.randint(0, void_width - 1)
-
-                # Ensure proposed void is within map bounds and is composed of suitable tiles
                 if 0 <= start_r_cand < h - void_height + 1 and \
                    0 <= start_c_cand < w - void_width + 1:
                     is_suitable_area = True
                     for r_check in range(start_r_cand, start_r_cand + void_height):
-                        # FIX: Changed c_check + void_width to start_c_cand + void_width
-                        for c_check in range(start_c_cand, start_c_cand + void_width):
+                        for c_check in range(c_check, c_check + void_width):
                             if grid[r_check][c_check] not in [ROOM_FLOOR, HALLWAY, FOREST_CLEARING, EMPTY_SPACE, ENTRANCE, DOOR]:
                                 is_suitable_area = False
                                 break
-                        if not is_suitable_area:
-                            break
-                    if is_suitable_area:
-                        suitable_area_coords.append((start_r_cand, start_c_cand))
-            
+                        if not is_suitable_area: break
+                    if is_suitable_area: suitable_area_coords.append((start_r_cand, start_c_cand))
             if not suitable_area_coords:
                 st.warning(f"No suitable void placement found within '{area_name}' for '{void_name}'.")
                 return grid, False, []
-            
             start_r, start_c = random.choice(suitable_area_coords)
-
-
-        # At this point, start_r, start_c should be valid for the void
-        # Place the void
         current_placed_void_coords = []
         for r_fill in range(start_r, start_r + void_height):
-            for c_fill in range(start_c, start_c + void_width): 
+            for c_fill in range(start_c, c_fill + void_width):
                 grid[r_fill][c_fill] = VOID_SYMBOL
                 current_placed_void_coords.append((r_fill, c_fill))
         placed = True
         placed_coords_list = current_placed_void_coords
-        
         attempts += 1
-
     if not placed:
         st.warning(f"Could not place void '{void_name}' ({void_width}x{void_height}) after {MAX_PLACEMENT_ATTEMPTS} attempts.")
     return grid, placed, placed_coords_list
 
 def place_all_items_on_map(grid, map_elements_data, map_type):
-    """
-    Places all configured monsters, treasures, traps, and voids onto the map grid.
-    Args:
-        grid (list of list of str): The map grid.
-        map_elements_data (dict): Dictionary of named map elements (rooms, clearings, etc.) and their coords.
-        map_type (str): The type of map (e.g., "Dungeon", "Forest").
-    Returns:
-        list of list of str: The updated map grid with items placed.
-    """
-    current_grid = [row[:] for row in grid] # Create a copy to modify
-    st.session_state.item_locations_details = {} # Clear previous item details
-
-    # 👹 Place Monsters
+    current_grid = [row[:] for row in grid]
+    st.session_state.item_locations_details = {}
     for config in st.session_state.monsters_config:
         amount = config.get('amount', 0)
         monster_type = config.get('monster_type', 'None')
         area = config.get('area', 'Random')
-        
         if amount > 0 and monster_type != "None":
-            st.info(f"Attempting to place {amount} {monster_type} monsters in {area}...")
             for _ in range(amount):
                 monster_token = get_unique_token_for_item(current_grid, "M")
-                current_grid, placed, placed_coords = place_item_on_grid(current_grid, monster_token, 
-                                                           item_details={'type': monster_type}, 
-                                                           room_name=area, map_type=map_type)
+                current_grid, placed, placed_coords = place_item_on_grid(current_grid, monster_token, item_details={'type': monster_type}, room_name=area, map_type=map_type)
                 if placed:
                     st.session_state.item_locations_details[placed_coords] = {
-                        'symbol': monster_token, 
+                        'symbol': monster_token,
                         'description': f"Monster: {monster_type}"
                     }
                 else:
                     st.warning(f"Failed to place a '{monster_type}' monster in '{area}'.")
-
-    # 💰 Place Treasures
     for config in st.session_state.treasures_config:
         amount = config.get('amount', 0)
         treasure_type = config.get('treasure_type', '')
         amount_type = config.get('amount_type', 'pieces')
         area = config.get('area', 'Random')
-
         if amount > 0 and treasure_type:
-            st.info(f"Attempting to place {amount} {treasure_type} ({amount_type}) treasures in {area}...")
             for _ in range(amount):
-                current_grid, placed, placed_coords = place_item_on_grid(current_grid, TREASURE_SYMBOL, 
-                                                           item_details={'type': treasure_type, 'amount_type': amount_type, 'amount': amount}, 
-                                                           room_name=area, map_type=map_type)
+                current_grid, placed, placed_coords = place_item_on_grid(current_grid, TREASURE_SYMBOL, item_details={'type': treasure_type, 'amount_type': amount_type, 'amount': amount}, room_name=area, map_type=map_type)
                 if placed:
                     st.session_state.item_locations_details[placed_coords] = {
-                        'symbol': TREASURE_SYMBOL, 
+                        'symbol': TREASURE_SYMBOL,
                         'description': f"Treasure: {treasure_type} ({amount} {amount_type})"
                     }
                 else:
                     st.warning(f"Failed to place a '{treasure_type}' treasure in '{area}'.")
-
-    # ☠️ Place Traps
     for config in st.session_state.traps_config:
         amount = config.get('amount', 0)
         trap_type = config.get('trap_type', '')
         area = config.get('area', 'Random')
-
         if amount > 0 and trap_type:
-            st.info(f"Attempting to place {amount} {trap_type} traps in {area}...")
             for _ in range(amount):
-                current_grid, placed, placed_coords = place_item_on_grid(current_grid, TRAP_SYMBOL, 
-                                                           item_details={'type': trap_type}, 
-                                                           room_name=area, map_type=map_type)
+                current_grid, placed, placed_coords = place_item_on_grid(current_grid, TRAP_SYMBOL, item_details={'type': trap_type}, room_name=area, map_type=map_type)
                 if placed:
                     st.session_state.item_locations_details[placed_coords] = {
-                        'symbol': TRAP_SYMBOL, 
+                        'symbol': TRAP_SYMBOL,
                         'description': f"Trap: {trap_type}"
                     }
                 else:
                     st.warning(f"Failed to place a '{trap_type}' trap in '{area}'.")
-
-    # ⬛ Place Voids/Pits
     for config in st.session_state.voids_config:
-        name = config.get('name', 'Void')
-        width = config.get('width', 2)
-        height = config.get('height', 2)
+        void_name = config.get('void_name', '')
+        void_width = config.get('width', 1)
+        void_height = config.get('height', 1)
         area = config.get('area', 'Random')
-
-        st.info(f"Attempting to place void/pit '{name}' ({width}x{height}) in {area}...")
-        current_grid, placed, placed_coords_list = place_void_on_grid(current_grid, width, height, name, map_elements_data, area)
-        if placed:
-            for coord in placed_coords_list:
-                st.session_state.item_locations_details[coord] = {
-                    'symbol': VOID_SYMBOL, 
-                    'description': f"Void/Pit: {name} ({width}x{height})"
-                }
-        else:
-            st.warning(f"Failed to place void/pit '{name}' in '{area}'.")
-
+        if void_name and void_width > 0 and void_height > 0:
+            current_grid, placed, placed_coords_list = place_void_on_grid(current_grid, void_width, void_height, void_name, map_elements_data, area_name=area)
+            if placed:
+                for coords in placed_coords_list:
+                    st.session_state.item_locations_details[coords] = {
+                        'symbol': VOID_SYMBOL,
+                        'description': f"Void: {void_name} ({void_width}x{void_height})"
+                    }
+            else:
+                st.warning(f"Failed to place void '{void_name}'.")
     return current_grid
 
 def generate_map_grid(width, height, map_type, num_elements):
@@ -1072,43 +1379,13 @@ if 'current_encounter_df' not in st.session_state:
     required_encounter_columns = ["Name", "Type", "Initiative", "Max HP", "Current HP", "AC", "Conditions"]
     st.session_state.current_encounter_df = pd.DataFrame(columns=required_encounter_columns)
 
-# --- Branding --- 
-# Use st.columns to place logos side-by-side
-# Adjust the column ratios (e.g., [1, 1] for equal width, or [0.7, 1.3] if one logo needs more space)
-logo_col1, logo_col2 = st.columns([1, 1]) 
-
-with logo_col1:
-    st.image("https://raw.githubusercontent.com/Mugmugmug81/keeping_up/main/1000210637.png", 
-             caption="2Ones (first splash screen)", 
-             width=200) # Set a fixed width for the first logo
-    
-with logo_col2:
-    st.image("https://raw.githubusercontent.com/Mugmugmug81/keeping_up/main/1000210636.png", 
-             caption="Dungeon Master! (second splash screen)", 
-             width=200) # Set a fixed width for the second logo
-
-st.markdown("<br>", unsafe_allow_html=True) # Add some space below logos
-
-# --- Main App Title and Subtitle (always visible) ---
-st.markdown("<h1 style='text-align: center; color: #8B4513; font-family: Georgia, serif;'>⚔️ The Dungeon Master's Codex (WIP) 📜</h1>", unsafe_allow_html=True)
-st.markdown("<h3 style='text-align: center; color: #A0522D; font-family: sans-serif;'>Your All-in-One Companion for Epic Adventures! (WIP)</h3>", unsafe_allow_html=True)
-
 st.markdown("---") # Visual separator below the main app header
 
 # The rest of your code (selected_tab, if selected_tab == "Home", etc.) remains below this block.
 
-# --- Sidebar Navigation ---
-st.sidebar.title("Choose Dungeon Master!")
-selected_tab = st.sidebar.radio(
-    "Build!",
-    options=["Bestiary", "Map Generator", "Map Library", "Campaign Manager", "Encounter Command Center"],
-    index=0,
-    key="main_navigation_radio_unique" 
-)
-
 # === Conditional Tab Rendering ===
 if selected_tab == "Map Generator":
-    st.header("Create Thy World")
+    #st.header("Create Thy World")
 
     # --- Initialize Map Generation Parameters in Session State (Add this near the top of your script, or before this tab) ---
     if "map_type" not in st.session_state:
