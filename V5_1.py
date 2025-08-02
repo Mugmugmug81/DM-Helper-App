@@ -258,24 +258,25 @@ if st.session_state.splash_phase == 2:
 
     PERSONALITY_TRAITS = [
         "I am always polite and respectful.",
-        "I’m a sucker for a pretty face.",
-        "I don’t like to get my hands dirty.",
+        "I am a sucker for a pretty face.",
+        "I do not like to get my hands dirty.",
         "I use long words in an attempt to sound smarter.",
         "I quote (sometimes inaccurately) sacred texts and proverbs in almost every situation.",
         "I am always calm, no matter what the situation. I never raise my voice or let my emotions control me.",
-        "I’m a hopeless romantic, always looking for that special someone.",
+        "I am a hopeless romantic, always looking for that special someone.",
         "I have a crude sense of humor.",
         "I get bored easily and need new thrills.",
         "I judge others by their actions, not their words.",
         "I have a high opinion of myself.",
         "I am secretly a coward.",
-        "I'm always cheerful and optimistic.",
+        "I am always cheerful and optimistic.",
         "I always have a plan.",
         "I put too much trust in those who wield power.",
         "I am easily distracted by the promise of wealth.",
         "I am slow to trust others.",
         "I speak my mind, even if it's unpopular.",
-        "I enjoy being the center of attention."
+        "I enjoy being the center of attention.",
+        "I am attracted to Bugs Bunny when he dresses up like a girl bunny"
     ]
 
     IDEALS = [
@@ -338,17 +339,92 @@ if st.session_state.splash_phase == 2:
     # New: Starting Equipment/Wealth
     STARTING_EQUIPMENT = [
         "A simple set of traveler's clothes, a backpack, and 10 gp.",
-        "Leather armor, a shortsword, a light crossbow with 20 bolts, and 25 gp.",
-        "A staff, a spellbook, components pouch, and 15 gp.",
-        "Chain mail, a martial weapon, a shield, and a holy symbol.",
-        "A dagger, a set of common clothes, a pouch containing 5 gp, and a disguise kit.",
         "A worn backpack, a waterskin, 5 days of rations, and a tattered map.",
         "A set of artisan's tools, a pouch with 10 gp, and a half-finished masterpiece."
     ]
-
+    CLASS_SPECIFIC_WEAPONS = {
+    "Barbarian": ["Greataxe", "Greatsword", "Maul", "Handaxe (pair)", "Javelin (4)"],
+    "Bard": ["Rapier", "Longsword", "Shortsword", "Dagger", "Light Crossbow"],
+    "Cleric": ["Mace", "Warhammer", "Light Crossbow", "Shield"],
+    "Druid": ["Scimitar", "Quarterstaff", "Dagger", "Sling"],
+    "Fighter": ["Greatsword", "Longsword and Shield", "Heavy Crossbow", "Handaxe (pair)", "Longbow"],
+    "Monk": ["Shortsword", "Quarterstaff", "Dart (10)"],
+    "Paladin": ["Longsword and Shield", "Greatsword", "Javelin (5)", "Light Hammer (2)"],
+    "Ranger": ["Longbow and Quiver of 20 Arrows", "Shortsword (pair)", "Scimitar (pair)"],
+    "Rogue": ["Shortsword (pair)", "Shortbow and Quiver of 20 Arrows", "Dagger (pair)"],
+    "Sorcerer": ["Light Crossbow", "Dagger", "Staff"],
+    "Warlock": ["Light Crossbow", "Dagger", "Quarterstaff"],
+    "Wizard": ["Quarterstaff", "Dagger", "Light Crossbow"],
+    "Artificer": ["Light Crossbow", "Light Hammer", "Wrench (as Club)"],
+    "Blood Hunter": ["Longsword", "Shortsword (pair)", "Handaxe (pair)"],
+    "Mystic": ["Dagger", "Quarterstaff"],
+    # Subclass defaults to base class or specific overrides
+    "Bard (College of Lore)": ["Rapier", "Dagger"],
+    "Cleric (Life Domain)": ["Mace", "Shield"],
+    "Druid (Circle of the Moon)": ["Scimitar", "Quarterstaff"],
+    "Fighter (Battle Master)": ["Greatsword", "Longsword and Shield"],
+    "Monk (Way of the Open Hand)": ["Shortsword", "Quarterstaff"],
+    "Paladin (Oath of Devotion)": ["Longsword and Shield", "Greatsword"],
+    "Ranger (Hunter)": ["Longbow and Quiver of 20 Arrows", "Shortsword (pair)"],
+    "Rogue (Thief)": ["Shortsword (pair)", "Shortbow and Quiver of 20 Arrows"],
+    "Sorcerer (Draconic Bloodline)": ["Dagger", "Staff"],
+    "Warlock (The Fiend)": ["Light Crossbow", "Dagger"],
+    "Wizard (School of Evocation)": ["Quarterstaff", "Dagger"],
+    "Artificer (Alchemist)": ["Light Crossbow", "Wrench (as Club)"],
+    "Barbarian (Path of the Totem Warrior)": ["Greataxe", "Handaxe (pair)"]
+    }
 
     # Ability Score Standard Array
     STANDARD_ARRAY = [15, 14, 13, 12, 10, 8]
+
+    # --- New: ASI Levels for each Class ---
+    CLASS_ASI_LEVELS = {
+        "Bard": [4, 8, 12, 16, 19],
+        "Cleric": [4, 8, 12, 16, 19],
+        "Druid": [4, 8, 12, 16, 19],
+        "Monk": [4, 8, 12, 16, 19],
+        "Paladin": [4, 8, 12, 16, 19],
+        "Ranger": [4, 8, 12, 16, 19],
+        "Sorcerer": [4, 8, 12, 16, 19],
+        "Warlock": [4, 8, 12, 16, 19],
+        "Wizard": [4, 8, 12, 16, 19],
+        "Artificer": [4, 8, 12, 16, 19],
+        "Barbarian": [4, 8, 12, 16, 19],
+        "Fighter": [4, 6, 8, 12, 14, 16, 19], # Fighters get more ASIs
+        "Rogue": [4, 8, 10, 12, 16, 19], # Rogues get an extra ASI at level 10
+        "Blood Hunter": [4, 8, 12, 16, 19],
+        "Mystic": [4, 8, 12, 16, 19],
+        # For subclasses, they follow the base class rules
+        "Bard (College of Lore)": [4, 8, 12, 16, 19],
+        # ... etc., fill in for other subclasses
+}
+    # --- Hit Dice for each Class ---
+    CLASS_HIT_DICE = {
+        "Barbarian": 12,
+        "Fighter": 10,
+        "Paladin": 10,
+        "Ranger": 10,
+        "Artificer": 8,
+        "Bard": 8,
+        "Cleric": 8,
+        "Druid": 8,
+        "Monk": 8,
+        "Rogue": 8,
+        "Warlock": 8,
+        "Sorcerer": 6,
+        "Wizard": 6,
+        "Blood Hunter": 10,
+        "Mystic": 6,
+}
+
+    # --- Proficiency Bonus by Level ---
+    PROFICIENCY_BONUS_BY_LEVEL = {
+        1: 2, 2: 2, 3: 2, 4: 2,
+        5: 3, 6: 3, 7: 3, 8: 3,
+        9: 4, 10: 4, 11: 4, 12: 4,
+        13: 5, 14: 5, 15: 5, 16: 5,
+        17: 6, 18: 6, 19: 6, 20: 6
+}
 
     # Mapping of classes to their primary and secondary ability scores
     CLASS_ABILITY_PRIORITIES = {
@@ -383,154 +459,278 @@ if st.session_state.splash_phase == 2:
         "Barbarian (Path of the Totem Warrior)": ["STR", "CON"]
     }
 
-
     # --- Function to generate ability scores ---
-    def generate_ability_scores(character_class):
-        scores = sorted(STANDARD_ARRAY, reverse=True) # Start with highest to lowest
-        abilities = ["STR", "DEX", "CON", "INT", "WIS", "CHA"]
-        ability_scores = {}
+    # --- Helper function to get base class from subclass name ---
+def _get_base_class(full_class_name):
+    """Extracts the base class name from a full class name (e.g., 'Wizard (School of Evocation)' -> 'Wizard')."""
+    if '(' in full_class_name:
+        return full_class_name.split('(')[0].strip()
+    return full_class_name
 
-        # Get primary and secondary abilities for the class
-        # Use .get with a default to prevent KeyError for new/unmapped classes
-        priorities = CLASS_ABILITY_PRIORITIES.get(character_class, ["STR", "CON"])
-        primary_stat = priorities[0]
-        secondary_stat = priorities[1] if len(priorities) > 1 else None
+def get_proficiency_bonus(level):
+    """Returns the proficiency bonus for a given character level."""
+    return PROFICIENCY_BONUS_BY_LEVEL.get(level, 2) # Default to 2 for safety
 
-        # Assign primary stat
-        if primary_stat in abilities:
-            ability_scores[primary_stat] = scores.pop(0)
-        else: # Fallback if primary_stat is invalid or not in list
-            primary_stat = random.choice([a for a in abilities if a not in ability_scores])
-            ability_scores[primary_stat] = scores.pop(0)
+def get_ability_modifier(score):
+    """Calculates the ability score modifier from a given score."""
+    return (score - 10) // 2
 
-        # Assign secondary stat
-        if secondary_stat and secondary_stat in abilities and secondary_stat not in ability_scores:
-            ability_scores[secondary_stat] = scores.pop(0)
-        else: # Fallback if secondary_stat is invalid, already used, or not defined
-            temp_abilities = [a for a in abilities if a not in ability_scores]
-            if temp_abilities:
-                chosen_secondary = random.choice(temp_abilities)
-                ability_scores[chosen_secondary] = scores.pop(0)
+def get_hp(character_class, level, con_score):
+    """Calculates Hit Points based on class, level, and Constitution score."""
+    base_class = _get_base_class(character_class)
+    hit_die = CLASS_HIT_DICE.get(base_class, 6) # Default to d6 if class not found
+    
+    # Calculate Constitution modifier
+    con_mod = (con_score - 10) // 2
+    
+    # HP for level 1 is always maximum hit die + CON mod
+    total_hp = hit_die + con_mod
+    
+    # For each level after 1, roll average hit die + CON mod
+    for _ in range(1, level):
+        # Use a simplified average for random generation
+        average_roll = (hit_die // 2) + 1
+        total_hp += average_roll + con_mod
+        
+    return max(1, total_hp) # HP must be at least 1
 
-        # Randomly assign remaining scores to remaining abilities
-        remaining_abilities = [a for a in abilities if a not in ability_scores]
-        random.shuffle(remaining_abilities)
-        for i, ability in enumerate(remaining_abilities):
-            ability_scores[ability] = scores[i]
+# --- Function to generate ability scores ---
+def generate_ability_scores(character_class, level):
+    scores = sorted(STANDARD_ARRAY, reverse=True)
+    abilities = ["STR", "DEX", "CON", "INT", "WIS", "CHA"]
+    ability_scores = {}
 
-        return ability_scores
+    priorities = CLASS_ABILITY_PRIORITIES.get(character_class, ["STR", "CON"])
+    primary_stat = priorities[0]
+    secondary_stat = priorities[1] if len(priorities) > 1 else None
 
+    # --- Initial Assignment of Scores (same as before) ---
+    if primary_stat in abilities:
+        ability_scores[primary_stat] = scores.pop(0)
+    else:
+        primary_stat = random.choice([a for a in abilities if a not in ability_scores])
+        ability_scores[primary_stat] = scores.pop(0)
+    if secondary_stat and secondary_stat in abilities and secondary_stat not in ability_scores:
+        ability_scores[secondary_stat] = scores.pop(0)
+    else:
+        temp_abilities = [a for a in abilities if a not in ability_scores]
+        if temp_abilities:
+            chosen_secondary = random.choice(temp_abilities)
+            ability_scores[chosen_secondary] = scores.pop(0)
+    remaining_abilities = [a for a in abilities if a not in ability_scores]
+    random.shuffle(remaining_abilities)
+    for i, ability in enumerate(remaining_abilities):
+        ability_scores[ability] = scores[i]
+    # --- End of Initial Assignment ---
 
-    # --- Functions for new characteristics ---
-    def generate_height_weight(race):
-        # Simplistic ranges, could be expanded for racial variations
-        if "Dwarf" in race:
-            height = random.randint(4, 5) # ft
-            weight = random.randint(150, 250) # lbs
-        elif "Halfling" in race or "Gnome" in race:
-            height = random.randint(2, 4)
-            weight = random.randint(40, 90)
-        elif "Orc" in race or "Goliath" in race or "Dragonborn" in race:
-            height = random.randint(6, 8)
-            weight = random.randint(200, 350)
-        else: # Default for most medium humanoids
-            height = random.randint(5, 7)
-            weight = random.randint(120, 220)
-        return f"{height}'{random.randint(0,11)}\"", f"{weight} lbs"
-
-    # --- Display content based on sidebar selection ---
-    if selected_tab == "Quick Creator":
-        st.header("Quick Character Creator")
-        st.write("Generate ideas for quick characters with a few clicks.")
-
-        # Initialize session state for character results if not present
-        if 'generated_character' not in st.session_state:
-            st.session_state.generated_character = None
-
-        if st.button("Generate Random Character", key="generate_character_btn"):
-            random_gender = random.choice(["Male", "Female"])
-            if random_gender == "Male":
-                name = random.choice(MALE_NAMES)
+    # --- Apply Ability Score Improvements based on level ---
+    asi_levels = CLASS_ASI_LEVELS.get(_get_base_class(character_class), [4, 8, 12, 16, 19])
+    
+    for asi_level in asi_levels:
+        if level >= asi_level:
+            # Randomly decide to boost one stat by 2 or two stats by 1
+            if random.choice([True, False]): # 50% chance for +2
+                # Boost primary stat by +2
+                ability_scores[primary_stat] = ability_scores.get(primary_stat, 0) + 2
             else:
-                name = random.choice(FEMALE_NAMES)
-
-            surname = random.choice(SURNAMES)
-            full_name = f"{name} {surname}"
-            race = random.choice(FANTASY_RACES)
-            character_class = random.choice(FANTASY_CLASSES)
-            alignment = random.choice(ALIGNMENTS)
-            background = random.choice(BACKGROUNDS)
-            personality_trait = random.choice(PERSONALITY_TRAITS)
-            ideal = random.choice(IDEALS)
-            bond = random.choice(BONDS)
-            flaw = random.choice(FLAWS)
+                # Boost primary stat by +1 and secondary by +1
+                ability_scores[primary_stat] = ability_scores.get(primary_stat, 0) + 1
+                if secondary_stat:
+                    ability_scores[secondary_stat] = ability_scores.get(secondary_stat, 0) + 1
+                else: # If no secondary stat, boost primary by +2
+                    ability_scores[primary_stat] = ability_scores.get(primary_stat, 0) + 2
+        else:
+            # Stop applying ASIs if we've passed the current level
+            break
             
-            ability_scores = generate_ability_scores(character_class)
+    return ability_scores
 
-            # New Physical Characteristics
-            height, weight = generate_height_weight(race)
-            eye_color = random.choice(EYE_COLORS)
-            hair_color = random.choice(HAIR_COLORS)
-            skin_color = random.choice(SKIN_COLORS)
+# --- Functions for new characteristics ---
 
-            # New Starting Equipment
-            starting_equipment = random.choice(STARTING_EQUIPMENT)
+def format_character_for_download(character_data):
+    """
+    Formats the generated character data into a human-readable text string.
+    """
+    if not character_data:
+        return "No character data available."
+
+    output = f"Name: {character_data['Name']}\n"
+    output += f"Level: {character_data.get('Level', 'N/A')}\n"
+    output += f"Race: {character_data['Race']}\n"
+    output += f"Class: {character_data['Class']}\n"
+    output += f"Alignment: {character_data['Alignment']}\n"
+    output += f"Background: {character_data['Background']}\n\n"
+    
+    # --- ADDED: Core Stats ---
+    output += "--- Core Stats ---\n"
+    output += f"HP: {character_data.get('HP', 'N/A')}\n"
+    output += f"Proficiency Bonus: +{character_data.get('Proficiency Bonus', 'N/A')}\n\n"
+    
+    output += "--- Traits ---\n"
+    output += f"Personality Trait: {character_data['Personality Trait']}\n"
+    output += f"Ideal: {character_data['Ideal']}\n"
+    output += f"Bond: {character_data['Bond']}\n"
+    output += f"Flaw: {character_data['Flaw']}\n\n"
+
+    output += "--- Ability Scores ---\n"
+    for stat, value in character_data['Ability Scores'].items():
+        output += f"{stat}: {value}\n"
+    output += "\n"
+    
+    output += "--- Physical Characteristics ---\n"
+    physical_chars = character_data['Physical Characteristics']
+    output += f"Height: {physical_chars['Height']}\n"
+    output += f"Weight: {physical_chars['Weight']}\n"
+    output += f"Eye Color: {physical_chars['Eye Color']}\n"
+    output += f"Hair Color: {physical_chars['Hair Color']}\n"
+    output += f"Skin Color: {physical_chars['Skin Color']}\n\n"
+    
+    output += "--- Starting Equipment ---\n"
+    output += f"{character_data['Starting Equipment']}\n"
+    
+    return output
+
+def generate_height_weight(race):
+    if "Dwarf" in race:
+        height = random.randint(4, 5) # ft
+        weight = random.randint(150, 250) # lbs
+    elif "Halfling" in race or "Gnome" in race:
+        height = random.randint(2, 4)
+        weight = random.randint(40, 90)
+    elif "Orc" in race or "Goliath" in race or "Dragonborn" in race:
+        height = random.randint(6, 8)
+        weight = random.randint(200, 350)
+    else: # Default for most medium humanoids
+        height = random.randint(5, 7)
+        weight = random.randint(120, 220)
+    return f"{height}'{random.randint(0,11)}\"", f"{weight} lbs"
 
 
-            st.session_state.generated_character = {
-                "Name": full_name,
-                "Race": race,
-                "Class": character_class,
-                "Alignment": alignment,
-                "Background": background,
-                "Personality Trait": personality_trait,
-                "Ideal": ideal,
-                "Bond": bond,
-                "Flaw": flaw,
-                "Ability Scores": ability_scores,
-                "Physical Characteristics": {
-                    "Height": height,
-                    "Weight": weight,
-                    "Eye Color": eye_color,
-                    "Hair Color": hair_color,
-                    "Skin Color": skin_color
-                },
-                "Starting Equipment": starting_equipment
-            }
-            # No rerun needed here, as the display is below and will update naturally
+if selected_tab == "Quick Creator":
+    st.header("Quick Character Creator")
+    st.write("Generate ideas for quick characters with a few clicks.")
+    selected_level = st.slider("Select Character Level", min_value=1, max_value=20, value=1, key="character_level_slider")
 
-        if st.session_state.generated_character:
-            st.markdown("---") # Separator
-            st.subheader("Generated Character Concept")
-            st.markdown(f"**Name:** {st.session_state.generated_character['Name']}")
-            st.markdown(f"**Race:** {st.session_state.generated_character['Race']}")
-            st.markdown(f"**Class:** {st.session_state.generated_character['Class']}")
-            st.markdown(f"**Alignment:** {st.session_state.generated_character['Alignment']}")
-            st.markdown(f"**Background:** {st.session_state.generated_character['Background']}")
-            st.markdown(f"**Personality Trait:** {st.session_state.generated_character['Personality Trait']}")
-            st.markdown(f"**Ideal:** {st.session_state.generated_character['Ideal']}")
-            st.markdown(f"**Bond:** {st.session_state.generated_character['Bond']}")
-            st.markdown(f"**Flaw:** {st.session_state.generated_character['Flaw']}")
-            
-            st.markdown("---") # Separator
-            st.subheader("Ability Scores")
-            # Display ability scores in a clear, consistent order
-            for stat in ["STR", "DEX", "CON", "INT", "WIS", "CHA"]:
-                st.markdown(f"**{stat}:** {st.session_state.generated_character['Ability Scores'].get(stat, 'N/A')}")
+    if 'generated_character' not in st.session_state:
+        st.session_state.generated_character = None
 
-            st.markdown("---") # Separator
-            st.subheader("Physical Characteristics")
-            physical_chars = st.session_state.generated_character['Physical Characteristics']
-            st.markdown(f"**Height:** {physical_chars['Height']}")
-            st.markdown(f"**Weight:** {physical_chars['Weight']}")
-            st.markdown(f"**Eye Color:** {physical_chars['Eye Color']}")
-            st.markdown(f"**Hair Color:** {physical_chars['Hair Color']}")
-            st.markdown(f"**Skin Color:** {physical_chars['Skin Color']}")
+    if st.button("Generate Random Character", key="generate_character_btn"):
+        random_gender = random.choice(["Male", "Female"])
+        if random_gender == "Male":
+            name = random.choice(MALE_NAMES)
+        else:
+            name = random.choice(FEMALE_NAMES)
 
-            st.markdown("---") # Separator
-            st.subheader("Starting Equipment")
-            st.markdown(f"{st.session_state.generated_character['Starting Equipment']}")
+        surname = random.choice(SURNAMES)
+        full_name = f"{name} {surname}"
+        race = random.choice(FANTASY_RACES)
+        character_class = random.choice(FANTASY_CLASSES)
+        alignment = random.choice(ALIGNMENTS)
+        background = random.choice(BACKGROUNDS)
+        personality_trait = random.choice(PERSONALITY_TRAITS)
+        ideal = random.choice(IDEALS)
+        bond = random.choice(BONDS)
+        flaw = random.choice(FLAWS)
+        
+        raw_ability_scores = generate_ability_scores(character_class, selected_level)
+        ability_scores_with_mods = {}
+        for stat, score in raw_ability_scores.items():
+            modifier = get_ability_modifier(score)
+            ability_scores_with_mods[stat] = {
+                "score": score,
+                "modifier": modifier
+        }
+        con_score = ability_scores_with_mods.get('CON', {"score": 10})["score"]
+        hp = get_hp(character_class, selected_level, con_score)
+        proficiency_bonus = get_proficiency_bonus(selected_level)
 
+        height, weight = generate_height_weight(race)
+        eye_color = random.choice(EYE_COLORS)
+        hair_color = random.choice(HAIR_COLORS)
+        skin_color = random.choice(SKIN_COLORS)
+
+        base_class = _get_base_class(character_class)
+        
+        equipment_list = [random.choice(STARTING_EQUIPMENT)]
+        class_weapon_options = CLASS_SPECIFIC_WEAPONS.get(base_class, CLASS_SPECIFIC_WEAPONS.get(character_class, ["Dagger"]))
+        equipment_list.append(random.choice(class_weapon_options))
+        
+        starting_equipment_str = ", ".join(equipment_list)
+
+
+        st.session_state.generated_character = {
+            "Name": full_name,
+            "Level": selected_level,
+            "HP": hp,
+            "Proficiency Bonus": proficiency_bonus,
+            "Race": race,
+            "Class": character_class,
+            "Alignment": alignment,
+            "Background": background,
+            "Personality Trait": personality_trait,
+            "Ideal": ideal,
+            "Bond": bond,
+            "Flaw": flaw,
+            "Ability Scores": ability_scores_with_mods,
+            "Physical Characteristics": {
+                "Height": height,
+                "Weight": weight,
+                "Eye Color": eye_color,
+                "Hair Color": hair_color,
+                "Skin Color": skin_color
+            },
+            "Starting Equipment": starting_equipment_str
+        }
+
+    if st.session_state.generated_character:
+        st.markdown("---")
+        st.subheader("Generated Character Concept")
+        st.markdown(f"**Level:** {st.session_state.generated_character.get('Level', 'N/A')}")
+        st.markdown(f"**Name:** {st.session_state.generated_character['Name']}")
+        st.markdown(f"**HP:** {st.session_state.generated_character.get('HP', 'N/A')}")
+        st.markdown(f"**Proficiency Bonus:** +{st.session_state.generated_character.get('Proficiency Bonus', 'N/A')}")
+        st.markdown(f"**Race:** {st.session_state.generated_character['Race']}")
+        st.markdown(f"**Class:** {st.session_state.generated_character['Class']}")
+        st.markdown(f"**Alignment:** {st.session_state.generated_character['Alignment']}")
+        st.markdown(f"**Background:** {st.session_state.generated_character['Background']}")
+        st.markdown(f"**Personality Trait:** {st.session_state.generated_character['Personality Trait']}")
+        st.markdown(f"**Ideal:** {st.session_state.generated_character['Ideal']}")
+        st.markdown(f"**Bond:** {st.session_state.generated_character['Bond']}")
+        st.markdown(f"**Flaw:** {st.session_state.generated_character['Flaw']}")
+        
+        st.markdown("---")
+        st.subheader("Ability Scores")
+        for stat in ["STR", "DEX", "CON", "INT", "WIS", "CHA"]:
+            score_data = st.session_state.generated_character['Ability Scores'].get(stat, {"score": "N/A", "modifier": "N/A"})
+            score = score_data['score']
+            modifier = score_data['modifier']
+            mod_str = f"+{modifier}" if modifier >= 0 else str(modifier)
+            st.markdown(f"**{stat}:** {score}, **MODIFIER:** {mod_str}")
+
+        st.markdown("---")
+        st.subheader("Physical Characteristics")
+        physical_chars = st.session_state.generated_character['Physical Characteristics']
+        st.markdown(f"**Height:** {physical_chars['Height']}")
+        st.markdown(f"**Weight:** {physical_chars['Weight']}")
+        st.markdown(f"**Eye Color:** {physical_chars['Eye Color']}")
+        st.markdown(f"**Hair Color:** {physical_chars['Hair Color']}")
+        st.markdown(f"**Skin Color:** {physical_chars['Skin Color']}")
+
+        st.markdown("---")
+        st.subheader("Starting Equipment")
+        st.markdown(f"{st.session_state.generated_character['Starting Equipment']}")
+        # --- ADD THIS DOWNLOAD BUTTON CODE HERE ---
+        character_name = st.session_state.generated_character['Name'].replace(' ', '_')
+        file_name = f"{character_name}_character_concept.txt"
+        formatted_character_data = format_character_for_download(st.session_state.generated_character)
+
+        st.download_button(
+            label="Download Character Sheet",
+            data=formatted_character_data,
+            file_name=file_name,
+            mime="text/plain",
+            key="download_character_btn"
+    )
 
     elif selected_tab == "Bestiary":
         st.header("Monster Bestiary")
