@@ -190,11 +190,11 @@ if st.session_state.splash_phase == 2:
     # Sidebar Navigation - THIS IS THE ONLY PLACE IT SHOULD BE DEFINED
     st.sidebar.title("Create Thy Story")
     selected_tab = st.sidebar.radio(
-        "", # No label, as the title above acts as one
-        options=["Quick Creator", "Bestiary", "Map Generator", "Map Library", "Campaign Manager", "Encounter Command Center"],
-        index=0, # Default to the first option
-        key="main_navigation_radio_unique" # Use the specific key you provided
-    )
+        "",
+        options=["Character Creator", "Bestiary", "Map Generator", "Map Library", "Campaign Manager", "Encounter Command Center"],
+        index=0,
+        key="main_navigation_radio_unique"
+)
 
     # --- Data for Character Generation (now part of Main App Content) ---
     FANTASY_RACES = [
@@ -461,6 +461,29 @@ if st.session_state.splash_phase == 2:
 
     # --- Function to generate ability scores ---
     # --- Helper function to get base class from subclass name ---
+def generate_full_name(race, gender):
+    if gender == "Male":
+        name = random.choice(MALE_NAMES)
+    else:
+        name = random.choice(FEMALE_NAMES)
+
+    surname = random.choice(SURNAMES)
+    return f"{name} {surname}"
+
+def _get_base_class(character_class):
+    # This handles subclasses, like "Fighter (Battle Master)"
+    return character_class.split(' ')[0]
+
+def get_starting_equipment(character_class, background):
+    equipment_list = [random.choice(STARTING_EQUIPMENT)]
+
+    # Add class-specific weapons using the dictionary you provided
+    base_class = _get_base_class(character_class)
+    class_weapon_options = CLASS_SPECIFIC_WEAPONS.get(base_class, CLASS_SPECIFIC_WEAPONS.get(character_class, ["Dagger"]))
+    equipment_list.append(random.choice(class_weapon_options))
+    
+    return equipment_list
+
 def _get_base_class(full_class_name):
     """Extracts the base class name from a full class name (e.g., 'Wizard (School of Evocation)' -> 'Wizard')."""
     if '(' in full_class_name:
@@ -606,32 +629,59 @@ def generate_height_weight(race):
     return f"{height}'{random.randint(0,11)}\"", f"{weight} lbs"
 
 
-if selected_tab == "Quick Creator":
-    st.header("Quick Character Creator")
-    st.write("Generate ideas for quick characters with a few clicks.")
+if selected_tab == "Character Creator":
+    st.header("Character Creator")
+    st.write("Summon thy hero")
+
+    # Optional text box for a unique character name
+    selected_name = st.text_input("Enter a unique character name (optional)")
+
+    # Selectors for Race and Class
+    race_options = ["Random"] + sorted(FANTASY_RACES)
+    selected_race = st.selectbox("Select Character Race", options=race_options, key="race_selector")
+
+    class_options = ["Random"] + sorted(FANTASY_CLASSES)
+    selected_class = st.selectbox("Select Character Class", options=class_options, key="class_selector")
+
+    # Slider for Level
     selected_level = st.slider("Select Character Level", min_value=1, max_value=20, value=1, key="character_level_slider")
 
     if 'generated_character' not in st.session_state:
         st.session_state.generated_character = None
 
-    if st.button("Generate Random Character", key="generate_character_btn"):
+    if st.button("Generate Character", key="generate_character_btn"):
         random_gender = random.choice(["Male", "Female"])
-        if random_gender == "Male":
-            name = random.choice(MALE_NAMES)
-        else:
-            name = random.choice(FEMALE_NAMES)
 
-        surname = random.choice(SURNAMES)
-        full_name = f"{name} {surname}"
-        race = random.choice(FANTASY_RACES)
-        character_class = random.choice(FANTASY_CLASSES)
+        # Determine Race and Class based on user selection
+        if selected_race == "Random":
+            race = random.choice(FANTASY_RACES)
+        else:
+            race = selected_race
+
+        if selected_class == "Random":
+            character_class = random.choice(FANTASY_CLASSES)
+        else:
+            character_class = selected_class
+
+        # Use user-provided name or generate a random one
+        if selected_name:
+            full_name = selected_name
+        else:
+            full_name = generate_full_name(race, random_gender)
+
+        # The rest of your generation logic continues here, unchanged
         alignment = random.choice(ALIGNMENTS)
         background = random.choice(BACKGROUNDS)
         personality_trait = random.choice(PERSONALITY_TRAITS)
         ideal = random.choice(IDEALS)
         bond = random.choice(BONDS)
         flaw = random.choice(FLAWS)
-        
+
+        starting_equipment = get_starting_equipment(character_class, background)
+        starting_equipment_str = "\n".join(starting_equipment)
+        height, weight = generate_height_weight(race)
+
+        # Generate ability scores
         raw_ability_scores = generate_ability_scores(character_class, selected_level)
         ability_scores_with_mods = {}
         for stat, score in raw_ability_scores.items():
@@ -639,24 +689,11 @@ if selected_tab == "Quick Creator":
             ability_scores_with_mods[stat] = {
                 "score": score,
                 "modifier": modifier
-        }
+            }
+
         con_score = ability_scores_with_mods.get('CON', {"score": 10})["score"]
         hp = get_hp(character_class, selected_level, con_score)
         proficiency_bonus = get_proficiency_bonus(selected_level)
-
-        height, weight = generate_height_weight(race)
-        eye_color = random.choice(EYE_COLORS)
-        hair_color = random.choice(HAIR_COLORS)
-        skin_color = random.choice(SKIN_COLORS)
-
-        base_class = _get_base_class(character_class)
-        
-        equipment_list = [random.choice(STARTING_EQUIPMENT)]
-        class_weapon_options = CLASS_SPECIFIC_WEAPONS.get(base_class, CLASS_SPECIFIC_WEAPONS.get(character_class, ["Dagger"]))
-        equipment_list.append(random.choice(class_weapon_options))
-        
-        starting_equipment_str = ", ".join(equipment_list)
-
 
         st.session_state.generated_character = {
             "Name": full_name,
@@ -675,29 +712,27 @@ if selected_tab == "Quick Creator":
             "Physical Characteristics": {
                 "Height": height,
                 "Weight": weight,
-                "Eye Color": eye_color,
-                "Hair Color": hair_color,
-                "Skin Color": skin_color
+                "Eye Color": random.choice(EYE_COLORS),
+                "Hair Color": random.choice(HAIR_COLORS),
+                "Skin Color": random.choice(SKIN_COLORS)
             },
-            "Starting Equipment": starting_equipment_str
+            "Starting Equipment": starting_equipment_str,
+            "Gender": random_gender # --- NEW: Store gender in session state ---
         }
 
+    # Display the character here if it exists
     if st.session_state.generated_character:
-        st.markdown("---")
         st.subheader("Generated Character Concept")
         st.markdown(f"**Level:** {st.session_state.generated_character.get('Level', 'N/A')}")
         st.markdown(f"**Name:** {st.session_state.generated_character['Name']}")
-        st.markdown(f"**HP:** {st.session_state.generated_character.get('HP', 'N/A')}")
-        st.markdown(f"**Proficiency Bonus:** +{st.session_state.generated_character.get('Proficiency Bonus', 'N/A')}")
         st.markdown(f"**Race:** {st.session_state.generated_character['Race']}")
         st.markdown(f"**Class:** {st.session_state.generated_character['Class']}")
-        st.markdown(f"**Alignment:** {st.session_state.generated_character['Alignment']}")
-        st.markdown(f"**Background:** {st.session_state.generated_character['Background']}")
-        st.markdown(f"**Personality Trait:** {st.session_state.generated_character['Personality Trait']}")
-        st.markdown(f"**Ideal:** {st.session_state.generated_character['Ideal']}")
-        st.markdown(f"**Bond:** {st.session_state.generated_character['Bond']}")
-        st.markdown(f"**Flaw:** {st.session_state.generated_character['Flaw']}")
-        
+
+        st.markdown("---")
+        st.subheader("Core Stats")
+        st.markdown(f"**HP:** {st.session_state.generated_character.get('HP', 'N/A')}")
+        st.markdown(f"**Proficiency Bonus:** +{st.session_state.generated_character.get('Proficiency Bonus', 'N/A')}")
+
         st.markdown("---")
         st.subheader("Ability Scores")
         for stat in ["STR", "DEX", "CON", "INT", "WIS", "CHA"]:
@@ -710,6 +745,8 @@ if selected_tab == "Quick Creator":
         st.markdown("---")
         st.subheader("Physical Characteristics")
         physical_chars = st.session_state.generated_character['Physical Characteristics']
+        # --- FIXED: Reading gender from session state now ---
+        st.markdown(f"**Gender:** {st.session_state.generated_character.get('Gender', 'N/A')}")
         st.markdown(f"**Height:** {physical_chars['Height']}")
         st.markdown(f"**Weight:** {physical_chars['Weight']}")
         st.markdown(f"**Eye Color:** {physical_chars['Eye Color']}")
@@ -717,20 +754,27 @@ if selected_tab == "Quick Creator":
         st.markdown(f"**Skin Color:** {physical_chars['Skin Color']}")
 
         st.markdown("---")
-        st.subheader("Starting Equipment")
-        st.markdown(f"{st.session_state.generated_character['Starting Equipment']}")
-        # --- ADD THIS DOWNLOAD BUTTON CODE HERE ---
-        character_name = st.session_state.generated_character['Name'].replace(' ', '_')
-        file_name = f"{character_name}_character_concept.txt"
-        formatted_character_data = format_character_for_download(st.session_state.generated_character)
+        st.subheader("Personality")
+        st.markdown(f"**Alignment:** {st.session_state.generated_character['Alignment']}")
+        st.markdown(f"**Background:** {st.session_state.generated_character['Background']}")
+        st.markdown(f"**Personality Trait:** {st.session_state.generated_character['Personality Trait']}")
+        st.markdown(f"**Ideal:** {st.session_state.generated_character['Ideal']}")
+        st.markdown(f"**Bond:** {st.session_state.generated_character['Bond']}")
+        st.markdown(f"**Flaw:** {st.session_state.generated_character['Flaw']}")
 
+        st.markdown("---")
+        st.subheader("Starting Equipment")
+        st.text(st.session_state.generated_character['Starting Equipment'])
+
+        # Download button
+        character_text = format_character_for_download(st.session_state.generated_character)
         st.download_button(
-            label="Download Character Sheet",
-            data=formatted_character_data,
-            file_name=file_name,
+            label="📄 Download Character Sheet",
+            data=character_text,
+            file_name=f"{st.session_state.generated_character['Name'].replace(' ', '_')}_Character_Sheet.txt",
             mime="text/plain",
-            key="download_character_btn"
-    )
+            key="download_character_sheet"
+        )
 
     elif selected_tab == "Bestiary":
         st.header("Monster Bestiary")
@@ -940,7 +984,8 @@ def save_campaigns(campaigns_list):
     st.success("Campaigns saved successfully!")
 
 # Dungeon generation helpers (Keep these)
-def _place_dungeon_elements(grid, num_elements, element_min_w, element_max_w, element_min_h, element_max_h, element_type=ROOM_FLOOR):
+def _place_dungeon_elements(grid, num_elements, element_min_w,
+                           element_max_w, element_min_h, element_max_h, element_type=ROOM_FLOOR):
     h, w = len(grid), len(grid[0])
     elements_data = {}
     placed_elements_count = 0
@@ -959,32 +1004,35 @@ def _place_dungeon_elements(grid, num_elements, element_min_w, element_max_w, el
                 if not (0 <= r_check < h and 0 <= c_check < w):
                     overlap = True
                     break
+                # FIX: Check for overlap based on element type
                 if element_type == FOREST_CLEARING:
                     is_core_area = (start_r <= r_check < end_r and start_c <= c_check < end_c)
                     if is_core_area:
-                        if grid[r_check][c_check] != EMPTY_SPACE:
+                        if grid[r_check][c_check] != EMPTY_SPACE and \
+                           grid[r_check][c_check] != FOREST_DENSE and \
+                           grid[r_check][c_check] != FOREST_LIGHT:
                             overlap = True
                             break
                     else:
-                        if grid[r_check][c_check] != EMPTY_SPACE and grid[r_check][c_check] != FOREST_LIGHT:
+                        if grid[r_check][c_check] != EMPTY_SPACE:
                             overlap = True
                             break
-                else:
+                else:  # Original dungeon logic
                     if grid[r_check][c_check] != EMPTY_SPACE:
                         overlap = True
                         break
             if overlap:
                 break
         if not overlap:
-            element_name = f"Element_{placed_elements_count + 1}"
+            element_name = f"Element {placed_elements_count + 1}"
             elements_data[element_name] = {'coords': []}
             for r in range(start_r, end_r):
                 for c in range(start_c, end_c):
                     grid[r][c] = element_type
-                    elements_data[element_name]['coords'].append((r,c))
+                    elements_data[element_name]['coords'].append((r, c))
             for r in range(start_r - 1, end_r + 1):
                 for c in range(start_c - 1, end_c + 1):
-                    if grid[r][c] == EMPTY_SPACE or grid[r][c] == FOREST_LIGHT:
+                    if grid[r][c] == EMPTY_SPACE:
                         grid[r][c] = WALL
             placed_elements_count += 1
     return grid, elements_data, placed_elements_count
@@ -1150,49 +1198,68 @@ def place_item_on_grid(grid, item_symbol, item_details=None, room_name=None, map
     attempts = 0
     placed_coords = None
     target_coords_pool = []
-    if room_name and room_name != "Random" and st.session_state.map_elements_data:
+
+    if room_name and room_name != "Random" and 'map_elements_data' in st.session_state:
         element_data = st.session_state.map_elements_data.get(room_name, {})
         target_coords_pool = element_data.get('coords', [])
         if not target_coords_pool:
             st.warning(f"Area '{room_name}' not found for placing item '{item_symbol}'. Attempting random placement.")
             room_name = "Random"
+            
     while not placed and attempts < MAX_PLACEMENT_ATTEMPTS:
-        if room_name == "Random" or not room_name:
-            r, c = random.randint(0, h - 1), random.randint(0, w - 1)
-        else:
-            if not target_coords_pool:
-                r, c = random.randint(0, h - 1), random.randint(0, w - 1)
+        r, c = -1, -1
+        if room_name == "Random" or not room_name or not target_coords_pool:
+            # When placing randomly, only choose a tile that is already a room floor or hallway
+            potential_coords = []
+            for row in range(h):
+                for col in range(w):
+                    if grid[row][col] in [ROOM_FLOOR, HALLWAY]:
+                        potential_coords.append((row, col))
+            if potential_coords:
+                r, c = random.choice(potential_coords)
             else:
-                r, c = random.choice(target_coords_pool)
+                # No suitable location found, break out of the loop
+                break
+        else:
+            r, c = random.choice(target_coords_pool)
+
         valid_base_tiles = []
         if map_type in ["Dungeon", "Town"]:
-            valid_base_tiles = [ROOM_FLOOR, HALLWAY, ENTRANCE, EMPTY_SPACE]
+            valid_base_tiles = [ROOM_FLOOR, HALLWAY, ENTRANCE]
         elif map_type == "Forest":
             valid_base_tiles = [FOREST_CLEARING, FOREST_LIGHT, EMPTY_SPACE, ENTRANCE]
             if item_symbol == TRAP_SYMBOL:
                 valid_base_tiles.append(FOREST_DENSE)
         elif map_type in ["Sea", "Desert", "Mountain", "Underdark"]:
             valid_base_tiles = [EMPTY_SPACE, ROOM_FLOOR, HALLWAY, FOREST_CLEARING, FOREST_LIGHT, FOREST_DENSE, ENTRANCE, WALL]
-            valid_base_tiles = [tile for tile in valid_base_tiles if tile != VOID_SYMBOL]
-        else:
-            valid_base_tiles = [ROOM_FLOOR, HALLWAY, FOREST_CLEARING, EMPTY_SPACE, ENTRANCE, DOOR]
+        
+        valid_base_tiles = [tile for tile in valid_base_tiles if tile != VOID_SYMBOL]
+
+        # Check if the chosen tile is valid
         if grid[r][c] in valid_base_tiles:
+            # We don't want to place monsters or traps on doors
             if grid[r][c] == DOOR and (item_symbol == TREASURE_SYMBOL or item_symbol == TRAP_SYMBOL or item_symbol.startswith(MONSTER_SYMBOL_PREFIX)):
                 attempts += 1
                 continue
+
+            # Check if the tile is already occupied
             is_occupied_by_item = False
             if grid[r][c].startswith(MONSTER_SYMBOL_PREFIX) or \
                grid[r][c] == TREASURE_SYMBOL or \
                grid[r][c] == TRAP_SYMBOL or \
                grid[r][c] == VOID_SYMBOL:
                 is_occupied_by_item = True
+
             if not is_occupied_by_item:
                 grid[r][c] = item_symbol
                 placed = True
                 placed_coords = (r, c)
+        
         attempts += 1
+
     if not placed:
         st.warning(f"Could not place '{item_symbol}' in '{room_name}' after {MAX_PLACEMENT_ATTEMPTS} attempts.")
+
     return grid, placed, placed_coords
 
 def place_void_on_grid(grid, void_width, void_height, void_name, map_elements_data, area_name=None):
@@ -2486,3 +2553,4 @@ elif selected_tab == "Encounter Command Center":
             st.success("Participants added/changes saved via auto-save.")
             # If you have *other* logic here that manipulates the DataFrame and needs saving,
             # you'd keep a save_encounter_data call, but based on current pattern, likely not.
+
